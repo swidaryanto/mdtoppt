@@ -10,11 +10,6 @@ A lightweight Markdown-to-presentation tool built as a simple single-page app.
 - Add speaker notes with a `:::notes` block
 - Switch themes for a more polished presentation look
 
-## Slide conventions
-
-```md
-layout: two-column
-theme: spruce
 
 # Slide title
 
