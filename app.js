@@ -1,42 +1,85 @@
-const sampleMarkdown = `# MD to PPT
+const sampleMarkdown = `layout: title
+theme: warm
 
-Turn simple markdown into a clean presentation.
+# MD to PPT
+
+Turn simple markdown into a polished presentation without leaving Markdown.
+
+:::notes
+Open with the promise: writing and presenting can happen in one flow.
+:::
 
 ---
+
+layout: two-column
 
 ## How it works
 
 - Write or paste markdown on the left
 - Separate slides with \`---\`
-- Upload a \`.md\` file when you already have content
+- Add slide directives at the top when needed
+
++++
+
+## Conventions
+
+- Use \`layout: two-column\` or \`layout: quote\`
+- Add \`theme: graphite\` per slide when needed
+- Write speaker notes in a \`:::notes\` block
+
+:::notes
+Point out that layouts are opt-in. A plain slide still works.
+:::
 
 ---
 
-## Good slide habits
+layout: quote
+theme: graphite
+
+> Good slides remove friction.
+> They make the point easy to see.
+
+Septian Widaryanto
+
+---
+
+layout: image-left
+theme: spruce
+
+## Visual support
+
+![Presentation workspace](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80)
+
+- Put the image anywhere in the slide
+- The image-left layout pulls it into a visual column
+- Notes stay out of the exported slide
+
+---
+
+layout: full-bleed
+
+![Abstract gradients](https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1600&q=80)
+
+---
+
+## Dense slide example
+
+| Area | What changed | Why it matters |
+| --- | --- | --- |
+| Layouts | Title, quote, two-column, image-left | Better narrative control |
+| Notes | Dedicated speaker notes block | Cleaner slide surface |
+| Density | Heuristic plus overflow checks | Faster editing feedback |
+| Themes | Warm, graphite, spruce | More intentional exports |
 
 1. Keep one idea per slide
-2. Use short bullets
-3. Let headings do the heavy lifting
-
----
-
-## Example code
-
-\`\`\`js
-const message = "Hello from markdown";
-console.log(message);
-\`\`\`
-
----
-
-## Final slide
-
-[Present clearly](https://www.widaryanto.com) with less setup.`;
+2. Let the warning state catch content that is too crowded
+3. Split heavy slides before presenting`;
 
 const markdownInput = document.querySelector("#markdown-input");
 const fileInput = document.querySelector("#markdown-file");
 const loadSampleButton = document.querySelector("#load-sample");
 const copyButton = document.querySelector("#copy-markdown");
+const themeSelect = document.querySelector("#theme-select");
 const prevButton = document.querySelector("#prev-slide");
 const nextButton = document.querySelector("#next-slide");
 const presentButton = document.querySelector("#present-mode");
@@ -45,15 +88,29 @@ const slideStage = document.querySelector("#slide-stage");
 const slideStrip = document.querySelector("#slide-strip");
 const slideCount = document.querySelector("#slide-count");
 const slidePosition = document.querySelector("#slide-position");
+const slideLayout = document.querySelector("#slide-layout");
+const slideDensity = document.querySelector("#slide-density");
+const overflowWarning = document.querySelector("#overflow-warning");
+const speakerNotes = document.querySelector("#speaker-notes");
 const slideCardTemplate = document.querySelector("#slide-card-template");
 const dropZone = document.querySelector("#drop-zone");
+
+const THEME_OPTIONS = {
+  warm: "Warm Paper",
+  graphite: "Graphite",
+  spruce: "Spruce",
+};
+
+const LAYOUT_OPTIONS = new Set(["default", "title", "two-column", "quote", "image-left", "full-bleed"]);
 
 const state = {
   slides: [],
   currentIndex: 0,
+  globalTheme: "warm",
 };
 
 markdownInput.value = sampleMarkdown;
+themeSelect.value = state.globalTheme;
 
 function escapeHtml(value) {
   return String(value)
@@ -132,6 +189,7 @@ function splitSlides(markdown) {
   const slides = [];
   let buffer = [];
   let inCodeBlock = false;
+  let inNotesBlock = false;
 
   lines.forEach((line, index) => {
     const trimmed = line.trim();
@@ -142,10 +200,23 @@ function splitSlides(markdown) {
       return;
     }
 
+    if (!inCodeBlock && trimmed === ":::notes") {
+      inNotesBlock = true;
+      buffer.push(line);
+      return;
+    }
+
+    if (!inCodeBlock && inNotesBlock && trimmed === ":::") {
+      inNotesBlock = false;
+      buffer.push(line);
+      return;
+    }
+
     const previousLine = index > 0 ? lines[index - 1].trim() : "";
     const nextLine = index < lines.length - 1 ? lines[index + 1].trim() : "";
     const canSplit =
       !inCodeBlock &&
+      !inNotesBlock &&
       trimmed === "---" &&
       (!previousLine || index === 0) &&
       (!nextLine || index === lines.length - 1);
@@ -291,7 +362,7 @@ function parseList(lines, startIndex, parentIndent = 0) {
   return { html, nextIndex: index };
 }
 
-function parseMarkdownSlide(markdown) {
+function parseMarkdownContent(markdown) {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const html = [];
   let index = 0;
@@ -301,6 +372,12 @@ function parseMarkdownSlide(markdown) {
     const trimmed = rawLine.trim();
 
     if (!trimmed) {
+      index += 1;
+      continue;
+    }
+
+    if (trimmed === "+++") {
+      html.push('<div class="layout-divider" aria-hidden="true"></div>');
       index += 1;
       continue;
     }
@@ -371,6 +448,7 @@ function parseMarkdownSlide(markdown) {
       const nextTrimmed = lines[index].trim();
       if (
         !nextTrimmed ||
+        nextTrimmed === "+++" ||
         /^#{1,6}\s/.test(nextTrimmed) ||
         /^>\s?/.test(nextTrimmed) ||
         /^```/.test(nextTrimmed) ||
@@ -390,6 +468,44 @@ function parseMarkdownSlide(markdown) {
   return html.join("");
 }
 
+function parseSpeakerNotes(markdown) {
+  const notesMatch = markdown.match(/(?:^|\n):::notes\s*\n([\s\S]*?)\n:::(?=\n|$)/);
+  return notesMatch ? notesMatch[1].trim() : "";
+}
+
+function removeSpeakerNotes(markdown) {
+  return markdown.replace(/(?:^|\n):::notes\s*\n[\s\S]*?\n:::(?=\n|$)/g, "\n").trim();
+}
+
+function parseSlideConfig(markdown) {
+  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+  const metadata = {};
+  let index = 0;
+
+  while (index < lines.length) {
+    const trimmed = lines[index].trim();
+
+    if (!trimmed) {
+      index += 1;
+      continue;
+    }
+
+    const configMatch = trimmed.match(/^(layout|theme)\s*:\s*(.+)$/i);
+    if (!configMatch) {
+      break;
+    }
+
+    metadata[configMatch[1].toLowerCase()] = configMatch[2].trim().toLowerCase();
+    index += 1;
+  }
+
+  const content = lines.slice(index).join("\n").trim();
+  const layout = LAYOUT_OPTIONS.has(metadata.layout) ? metadata.layout : "default";
+  const theme = Object.hasOwn(THEME_OPTIONS, metadata.theme) ? metadata.theme : null;
+
+  return { content, layout, theme };
+}
+
 function getSlideTitle(markdown, index) {
   const heading = markdown
     .split("\n")
@@ -399,23 +515,131 @@ function getSlideTitle(markdown, index) {
   return heading ? heading.replace(/^#{1,3}\s+/, "") : `Slide ${index + 1}`;
 }
 
-function buildSlides(markdown) {
-  return splitSlides(markdown).map((part, index) => ({
-      raw: part,
-      html: parseMarkdownSlide(part),
-      title: getSlideTitle(part, index),
-    }));
+function buildSlideMarkup(html, layout) {
+  if (layout === "two-column") {
+    const parts = html.split('<div class="layout-divider" aria-hidden="true"></div>');
+    if (parts.length > 1) {
+      const left = parts.shift();
+      const right = parts.join("");
+      return `<div class="slide-columns"><div class="slide-column">${left}</div><div class="slide-column">${right}</div></div>`;
+    }
+  }
+
+  if (layout === "image-left") {
+    const imageMatch = html.match(/<img\b[^>]*>/);
+    if (imageMatch) {
+      const imageMarkup = imageMatch[0];
+      const contentMarkup = html.replace(imageMarkup, "");
+      return `<div class="slide-media-layout"><div class="slide-media">${imageMarkup}</div><div class="slide-copy">${contentMarkup}</div></div>`;
+    }
+  }
+
+  if (layout === "full-bleed") {
+    return `<div class="slide-full-bleed">${html}</div>`;
+  }
+
+  return html;
 }
 
-async function loadMarkdownFile(file) {
-  if (!file) {
+function getContentDensityScore(markdown) {
+  const lines = markdown.split("\n");
+  const words = markdown.trim().split(/\s+/).filter(Boolean).length;
+  const bullets = lines.filter((line) => /^(\s*)([-*]|\d+\.)\s+/.test(line)).length;
+  const headings = lines.filter((line) => /^#{1,6}\s+/.test(line)).length;
+  const tables = lines.filter((line) => line.includes("|")).length;
+  const images = (markdown.match(/!\[[^\]]*\]\(/g) || []).length;
+
+  return words + bullets * 6 + headings * 4 + tables * 3 + images * 10;
+}
+
+function getDensityLabel(score) {
+  if (score > 160) {
+    return "crowded";
+  }
+  if (score > 95) {
+    return "busy";
+  }
+  return "balanced";
+}
+
+function getDensityAdvice(label) {
+  if (label === "crowded") {
+    return "This slide is likely too dense. Consider splitting it or trimming the copy.";
+  }
+  if (label === "busy") {
+    return "This slide is getting full. Tighten the copy or switch to a stronger layout.";
+  }
+  return "";
+}
+
+function buildSlides(markdown) {
+  return splitSlides(markdown).map((part, index) => {
+    const notes = parseSpeakerNotes(part);
+    const noteFree = removeSpeakerNotes(part);
+    const config = parseSlideConfig(noteFree);
+    const html = parseMarkdownContent(config.content);
+    const densityScore = getContentDensityScore(config.content);
+
+    return {
+      raw: part,
+      content: config.content,
+      notes,
+      html,
+      markup: buildSlideMarkup(html, config.layout),
+      title: getSlideTitle(config.content, index),
+      layout: config.layout,
+      theme: config.theme || state.globalTheme,
+      densityScore,
+      densityLabel: getDensityLabel(densityScore),
+    };
+  });
+}
+
+function updateSpeakerNotes(slide) {
+  if (!slide || !slide.notes) {
+    speakerNotes.innerHTML = `
+      <p class="support-label">Speaker notes</p>
+      <p class="support-empty">No notes for this slide yet.</p>
+    `;
     return;
   }
 
-  const text = await file.text();
-  markdownInput.value = text;
-  state.currentIndex = 0;
-  render();
+  const notesHtml = slide.notes
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => `<p>${parseInlineMarkdown(line)}</p>`)
+    .join("");
+
+  speakerNotes.innerHTML = `
+    <p class="support-label">Speaker notes</p>
+    <div class="speaker-notes-copy">${notesHtml}</div>
+  `;
+}
+
+function updateOverflowWarning(slide) {
+  const slideElement = slideStage.querySelector(".slide");
+  if (!slide || !slideElement) {
+    overflowWarning.hidden = true;
+    overflowWarning.textContent = "";
+    return;
+  }
+
+  const hasOverflow = slideElement.scrollHeight > slideElement.clientHeight + 8;
+  const densityAdvice = getDensityAdvice(slide.densityLabel);
+
+  if (!hasOverflow && !densityAdvice) {
+    overflowWarning.hidden = true;
+    overflowWarning.textContent = "";
+    return;
+  }
+
+  const message = hasOverflow
+    ? "Content is overflowing this slide. Reduce copy, split the slide, or pick a stronger layout."
+    : densityAdvice;
+
+  overflowWarning.hidden = false;
+  overflowWarning.textContent = message;
+  overflowWarning.dataset.state = hasOverflow ? "overflow" : "dense";
 }
 
 function renderStage() {
@@ -430,17 +654,32 @@ function renderStage() {
     `;
     slideCount.textContent = "0 slides";
     slidePosition.textContent = "Slide 0 / 0";
+    slideLayout.textContent = "Layout: default";
+    slideDensity.textContent = "Density: balanced";
+    slideStage.dataset.theme = state.globalTheme;
+    overflowWarning.hidden = true;
+    overflowWarning.textContent = "";
+    updateSpeakerNotes(null);
     prevButton.disabled = true;
     nextButton.disabled = true;
     return;
   }
 
   const slide = state.slides[state.currentIndex];
-  slideStage.innerHTML = `<div class="slide">${slide.html}</div>`;
+  slideStage.dataset.theme = slide.theme;
+  slideStage.innerHTML = `<div class="slide slide-layout-${slide.layout}" data-density="${slide.densityLabel}">${slide.markup}</div>`;
   slideCount.textContent = `${state.slides.length} ${state.slides.length === 1 ? "slide" : "slides"}`;
   slidePosition.textContent = `Slide ${state.currentIndex + 1} / ${state.slides.length}`;
+  slideLayout.textContent = `Layout: ${slide.layout}`;
+  slideDensity.textContent = `Density: ${slide.densityLabel}`;
+  slideDensity.dataset.state = slide.densityLabel;
+  updateSpeakerNotes(slide);
   prevButton.disabled = state.currentIndex === 0;
   nextButton.disabled = state.currentIndex === state.slides.length - 1;
+
+  window.requestAnimationFrame(() => {
+    updateOverflowWarning(slide);
+  });
 }
 
 function renderStrip() {
@@ -451,6 +690,9 @@ function renderStrip() {
     slideCard.querySelector(".slide-thumb-index").textContent = `Slide ${index + 1}`;
     slideCard.querySelector(".slide-thumb-title").textContent = slide.title;
     slideCard.classList.toggle("active", index === state.currentIndex);
+    slideCard.dataset.theme = slide.theme;
+    slideCard.dataset.layout = slide.layout;
+    slideCard.dataset.density = slide.densityLabel;
     slideCard.addEventListener("click", () => {
       state.currentIndex = index;
       render();
@@ -466,6 +708,17 @@ function render() {
   }
   renderStage();
   renderStrip();
+}
+
+async function loadMarkdownFile(file) {
+  if (!file) {
+    return;
+  }
+
+  const text = await file.text();
+  markdownInput.value = text;
+  state.currentIndex = 0;
+  render();
 }
 
 markdownInput.addEventListener("input", render);
@@ -494,6 +747,11 @@ copyButton.addEventListener("click", async () => {
       copyButton.textContent = "Copy text";
     }, 1200);
   }
+});
+
+themeSelect.addEventListener("change", () => {
+  state.globalTheme = themeSelect.value;
+  render();
 });
 
 prevButton.addEventListener("click", () => {
@@ -537,12 +795,21 @@ document.addEventListener("fullscreenchange", () => {
 
 printButton.addEventListener("click", () => {
   const currentMarkup = slideStage.innerHTML;
+  const currentTheme = slideStage.dataset.theme;
   const printMarkup = state.slides
-    .map((slide) => `<article class="slide-stage print-slide"><div class="slide">${slide.html}</div></article>`)
+    .map(
+      (slide) => `
+        <article class="slide-stage print-slide" data-theme="${escapeAttribute(slide.theme)}">
+          <div class="slide slide-layout-${slide.layout}" data-density="${slide.densityLabel}">
+            ${slide.markup}
+          </div>
+        </article>`,
+    )
     .join("");
 
   slideStage.innerHTML = `${currentMarkup}<section class="print-deck">${printMarkup}</section>`;
   window.print();
+  slideStage.dataset.theme = currentTheme;
   slideStage.innerHTML = currentMarkup;
 });
 

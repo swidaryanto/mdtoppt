@@ -31,10 +31,22 @@
           <input id="markdown-file" type="file" accept=".md,text/markdown" />
           <button id="load-sample" type="button">Load sample</button>
           <button id="copy-markdown" type="button">Copy text</button>
+          <label class="select-field">
+            <span>Theme</span>
+            <select id="theme-select" aria-label="Presentation theme">
+              <option value="warm">Warm Paper</option>
+              <option value="graphite">Graphite</option>
+              <option value="spruce">Spruce</option>
+            </select>
+          </label>
         </div>
 
         <div id="drop-zone" class="drop-zone">
-          <p class="drop-copy">Drop a markdown file here, or paste into the editor.</p>
+          <p class="drop-copy">
+            Drop a markdown file here, or paste into the editor. Use
+            <code>layout: two-column</code>, <code>theme: spruce</code>,
+            <code>+++ </code> for column breaks, and <code>:::notes</code> for speaker notes.
+          </p>
           <textarea id="markdown-input" spellcheck="false" aria-label="Markdown input"></textarea>
         </div>
       </aside>
@@ -45,6 +57,8 @@
             <span id="slide-count">0 slides</span>
             <span class="dot"></span>
             <span id="slide-position">Slide 0 / 0</span>
+            <span id="slide-layout" class="meta-pill">Layout: default</span>
+            <span id="slide-density" class="meta-pill">Density: balanced</span>
           </div>
           <div class="presentation-actions">
             <button id="present-mode" type="button">Present</button>
@@ -56,6 +70,14 @@
 
         <section class="stage-wrap">
           <article id="slide-stage" class="slide-stage" aria-live="polite"></article>
+        </section>
+
+        <section class="support-row">
+          <div id="overflow-warning" class="support-card" hidden></div>
+          <div id="speaker-notes" class="support-card support-card-notes">
+            <p class="support-label">Speaker notes</p>
+            <p class="support-empty">No notes for this slide yet.</p>
+          </div>
         </section>
 
         <section>
