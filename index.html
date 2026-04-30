@@ -29,8 +29,12 @@
         <div class="toolbar">
           <label class="upload-button" for="markdown-file">Upload `.md`</label>
           <input id="markdown-file" type="file" accept=".md,text/markdown" />
+          <label class="upload-button" for="session-file">Import session</label>
+          <input id="session-file" type="file" accept=".json,application/json" />
           <button id="load-sample" type="button">Load sample</button>
           <button id="copy-markdown" type="button">Copy text</button>
+          <button id="export-markdown" type="button">Export `.md`</button>
+          <button id="export-session" type="button">Export session</button>
           <label class="select-field">
             <span>Theme</span>
             <select id="theme-select" aria-label="Presentation theme">
@@ -61,6 +65,7 @@
             <span id="slide-density" class="meta-pill">Density: balanced</span>
           </div>
           <div class="presentation-actions">
+            <button id="export-pptx" type="button">Export `.pptx`</button>
             <button id="present-mode" type="button">Present</button>
             <button id="print-deck" type="button">Print / PDF</button>
             <button id="prev-slide" type="button">Previous</button>
@@ -93,6 +98,7 @@
       </button>
     </template>
 
+    <script src="https://unpkg.com/pptxgenjs/dist/pptxgen.bundle.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>
