@@ -131,6 +131,13 @@ const THEME_OPTIONS = {
 };
 
 const LAYOUT_OPTIONS = new Set(["default", "title", "two-column", "quote", "image-left", "full-bleed"]);
+const HEADING_PATTERN = /^#{1,6}\s/;
+const BLOCKQUOTE_PATTERN = /^>\s?/;
+const CODE_FENCE_PATTERN = /^```/;
+const HORIZONTAL_RULE_PATTERN = /^(-{3,}|\*{3,}|_{3,})$/;
+const INLINE_IMAGE_PATTERN = /!\[([^\]]*)\]\(((?:[^()\s]+|\([^)]*\))+)(?:\s+"([^"]+)")?\)/;
+const INLINE_IMAGE_GLOBAL_PATTERN = /!\[([^\]]*)\]\(((?:[^()\s]+|\([^)]*\))+)(?:\s+"([^"]+)")?\)/g;
+const INLINE_LINK_GLOBAL_PATTERN = /\[([^\]]+)\]\(((?:[^()\s]+|\([^)]*\))+)\)/g;
 
 const state = {
   slides: [],
@@ -200,15 +207,34 @@ function renderImage(altText, rawUrl, title = "") {
 
 function parseInlineMarkdown(text) {
   const escaped = escapeHtml(text);
-  const inlineImagePattern = /!\[([^\]]*)\]\(((?:[^()\s]+|\([^)]*\))+)(?:\s+"([^"]+)")?\)/g;
-  const inlineLinkPattern = /\[([^\]]+)\]\(((?:[^()\s]+|\([^)]*\))+)\)/g;
 
   return escaped
-    .replace(inlineImagePattern, (_, alt, url, title) => renderImage(alt, url, title))
-    .replace(inlineLinkPattern, (_, label, url) => renderLink(label, url))
+    .replace(INLINE_IMAGE_GLOBAL_PATTERN, (_, alt, url, title) => renderImage(alt, url, title))
+    .replace(INLINE_LINK_GLOBAL_PATTERN, (_, label, url) => renderLink(label, url))
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/\*([^*]+)\*/g, "<em>$1</em>");
+}
+
+function isMarkdownBlockBoundary(lines, index, { stopOnImage = false } = {}) {
+  const trimmed = lines[index].trim();
+  if (!trimmed || trimmed === "+++") {
+    return true;
+  }
+  if (
+    HEADING_PATTERN.test(trimmed) ||
+    BLOCKQUOTE_PATTERN.test(trimmed) ||
+    CODE_FENCE_PATTERN.test(trimmed) ||
+    HORIZONTAL_RULE_PATTERN.test(trimmed) ||
+    isListItem(lines[index]) ||
+    Boolean(parseTable(lines, index))
+  ) {
+    return true;
+  }
+  if (stopOnImage && INLINE_IMAGE_PATTERN.test(lines[index])) {
+    return true;
+  }
+  return false;
 }
 
 function splitSlides(markdown) {
@@ -221,7 +247,7 @@ function splitSlides(markdown) {
   lines.forEach((line, index) => {
     const trimmed = line.trim();
 
-    if (/^```/.test(trimmed)) {
+    if (CODE_FENCE_PATTERN.test(trimmed)) {
       inCodeBlock = !inCodeBlock;
       buffer.push(line);
       return;
@@ -414,7 +440,7 @@ function parseMarkdownContent(markdown) {
       const codeBuffer = [];
       index += 1;
 
-      while (index < lines.length && !/^```/.test(lines[index].trim())) {
+      while (index < lines.length && !CODE_FENCE_PATTERN.test(lines[index].trim())) {
         codeBuffer.push(lines[index]);
         index += 1;
       }
@@ -442,7 +468,7 @@ function parseMarkdownContent(markdown) {
       continue;
     }
 
-    if (/^#{1,6}\s/.test(trimmed)) {
+    if (HEADING_PATTERN.test(trimmed)) {
       const level = Math.min(trimmed.match(/^#+/)[0].length, 6);
       const content = trimmed.replace(/^#{1,6}\s/, "");
       html.push(`<h${level}>${parseInlineMarkdown(content)}</h${level}>`);
@@ -450,10 +476,10 @@ function parseMarkdownContent(markdown) {
       continue;
     }
 
-    if (/^>\s?/.test(trimmed)) {
+    if (BLOCKQUOTE_PATTERN.test(trimmed)) {
       const quoteLines = [];
 
-      while (index < lines.length && /^>\s?/.test(lines[index].trim())) {
+      while (index < lines.length && BLOCKQUOTE_PATTERN.test(lines[index].trim())) {
         quoteLines.push(parseInlineMarkdown(lines[index].trim().replace(/^>\s?/, "")));
         index += 1;
       }
@@ -462,7 +488,7 @@ function parseMarkdownContent(markdown) {
       continue;
     }
 
-    if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+    if (HORIZONTAL_RULE_PATTERN.test(trimmed)) {
       html.push("<hr />");
       index += 1;
       continue;
@@ -472,20 +498,11 @@ function parseMarkdownContent(markdown) {
     index += 1;
 
     while (index < lines.length) {
-      const nextTrimmed = lines[index].trim();
-      if (
-        !nextTrimmed ||
-        nextTrimmed === "+++" ||
-        /^#{1,6}\s/.test(nextTrimmed) ||
-        /^>\s?/.test(nextTrimmed) ||
-        /^```/.test(nextTrimmed) ||
-        isListItem(lines[index]) ||
-        parseTable(lines, index) ||
-        /^(-{3,}|\*{3,}|_{3,})$/.test(nextTrimmed)
-      ) {
+      const currentTrimmed = lines[index].trim();
+      if (isMarkdownBlockBoundary(lines, index)) {
         break;
       }
-      paragraphLines.push(nextTrimmed);
+      paragraphLines.push(currentTrimmed);
       index += 1;
     }
 
@@ -553,11 +570,11 @@ function parseMarkdownForExport(markdown) {
       continue;
     }
 
-    if (/^```/.test(trimmed)) {
+    if (CODE_FENCE_PATTERN.test(trimmed)) {
       const language = trimmed.slice(3).trim();
       const codeLines = [];
       index += 1;
-      while (index < lines.length && !/^```/.test(lines[index].trim())) {
+      while (index < lines.length && !CODE_FENCE_PATTERN.test(lines[index].trim())) {
         codeLines.push(lines[index]);
         index += 1;
       }
@@ -586,7 +603,7 @@ function parseMarkdownForExport(markdown) {
       continue;
     }
 
-    const imageMatch = rawLine.match(/!\[([^\]]*)\]\(((?:[^()\s]+|\([^)]*\))+)(?:\s+"([^"]+)")?\)/);
+    const imageMatch = rawLine.match(INLINE_IMAGE_PATTERN);
     if (imageMatch) {
       blocks.push({
         type: "image",
@@ -612,7 +629,7 @@ function parseMarkdownForExport(markdown) {
       continue;
     }
 
-    if (/^#{1,6}\s/.test(trimmed)) {
+    if (HEADING_PATTERN.test(trimmed)) {
       const level = Math.min(trimmed.match(/^#+/)[0].length, 6);
       blocks.push({
         type: "heading",
@@ -623,9 +640,9 @@ function parseMarkdownForExport(markdown) {
       continue;
     }
 
-    if (/^>\s?/.test(trimmed)) {
+    if (BLOCKQUOTE_PATTERN.test(trimmed)) {
       const quote = [];
-      while (index < lines.length && /^>\s?/.test(lines[index].trim())) {
+      while (index < lines.length && BLOCKQUOTE_PATTERN.test(lines[index].trim())) {
         quote.push(stripInlineMarkdown(lines[index].trim().replace(/^>\s?/, "")));
         index += 1;
       }
@@ -636,23 +653,11 @@ function parseMarkdownForExport(markdown) {
     const paragraphLines = [stripInlineMarkdown(trimmed)];
     index += 1;
     while (index < lines.length) {
-      const nextTrimmed = lines[index].trim();
-      if (
-        !nextTrimmed ||
-        nextTrimmed === "+++" ||
-        /^#{1,6}\s/.test(nextTrimmed) ||
-        /^>\s?/.test(nextTrimmed) ||
-        /^```/.test(nextTrimmed) ||
-        isListItem(lines[index]) ||
-        parseTable(lines, index)
-      ) {
+      const currentTrimmed = lines[index].trim();
+      if (isMarkdownBlockBoundary(lines, index, { stopOnImage: true })) {
         break;
       }
-      const inlineImage = lines[index].match(/!\[([^\]]*)\]\(((?:[^()\s]+|\([^)]*\))+)(?:\s+"([^"]+)")?\)/);
-      if (inlineImage) {
-        break;
-      }
-      paragraphLines.push(stripInlineMarkdown(nextTrimmed));
+      paragraphLines.push(stripInlineMarkdown(currentTrimmed));
       index += 1;
     }
     blocks.push({ type: "paragraph", text: paragraphLines.join(" ") });
