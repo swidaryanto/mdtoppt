@@ -1,15 +1,26 @@
-# MD to PPT
+# mdtoppt
 
-A lightweight Markdown-to-presentation tool built as a simple single-page app.
+Turn Markdown into presentation slides with live preview, theme control, and export workflows.
 
-## What it does
+## What it includes
 
-- Write or paste Markdown and preview slides instantly
-- Split slides with `---`
-- Use slide layouts like `title`, `two-column`, `quote`, `image-left`, and `full-bleed`
-- Add speaker notes with a `:::notes` block
-- Switch themes for a more polished presentation look
+- Live slide preview from Markdown
+- Slide splitting with `---`
+- Layout directives: `title`, `two-column`, `quote`, `image-left`, `full-bleed`
+- Speaker notes via `:::notes ... :::`
+- Theme controls: `warm`, `graphite`, `spruce`
+- Export options:
+  - Print / PDF
+  - Raw Markdown (`.md`)
+  - Session file (`.json`)
+  - PowerPoint (`.pptx`) with PptxGenJS
+- Session persistence with `localStorage` and URL state (`?theme=&slide=`)
 
+## Slide syntax example
+
+```md
+layout: two-column
+theme: spruce
 
 # Slide title
 
@@ -17,13 +28,21 @@ Left column content
 
 +++
 
-Right column content
+## Right side
+
+- Bullet one
+- Bullet two
 
 :::notes
-Speaker notes go here
+Talk track for this slide.
 :::
 ```
 
-## Local usage
+## Run locally
 
-Open [index.html](./index.html) in a browser and start editing the Markdown input.
+Open [index.html](./index.html) directly in a browser.
+
+## Tech
+
+- Plain HTML, CSS, and JavaScript
+- [PptxGenJS](https://gitbrent.github.io/PptxGenJS/) for `.pptx` export
