@@ -49,13 +49,11 @@ button,
   border: 1px solid rgba(34, 31, 26, 0.1);
   background: linear-gradient(180deg, #ffffff, #f4ede3);
   color: var(--ink);
-  border-radius: 16px;
+  border-radius: 4px;
   padding: 0.82rem 1.15rem;
   font-weight: 400;
   font-size: 0.88rem;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 8px 20px rgba(56, 43, 24, 0.08);
+  box-shadow: none;
   transition:
     transform 180ms ease,
     border-color 180ms ease,
@@ -75,17 +73,13 @@ button:hover,
   transform: translateY(-2px) scale(1.01);
   border-color: rgba(34, 31, 26, 0.24);
   background: linear-gradient(180deg, #fffdf8, #efe5d7);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.92),
-    0 16px 30px rgba(56, 43, 24, 0.14);
+  box-shadow: none;
 }
 
 button:active,
 .upload-button:active {
   transform: translateY(0);
-  box-shadow:
-    inset 0 1px 2px rgba(34, 31, 26, 0.06),
-    0 4px 10px rgba(56, 43, 24, 0.08);
+  box-shadow: none;
 }
 
 button:focus-visible,
@@ -121,17 +115,13 @@ button:focus-visible,
   background: linear-gradient(180deg, #eb7446, #cf5d33);
   color: #fffdf8;
   border-color: rgba(164, 69, 33, 0.35);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 12px 24px rgba(207, 93, 51, 0.22);
+  box-shadow: none;
 }
 
 #present-mode:hover {
   border-color: rgba(164, 69, 33, 0.42);
   background: linear-gradient(180deg, #f17d4e, #d36036);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 18px 32px rgba(207, 93, 51, 0.3);
+  box-shadow: none;
 }
 
 #prev-slide,
@@ -158,7 +148,7 @@ pre {
   background: var(--panel);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: var(--shadow);
+  box-shadow: none;
   border-radius: var(--radius-lg);
 }
 
@@ -252,7 +242,7 @@ pre {
 
 #markdown-input:focus {
   border-color: rgba(215, 100, 59, 0.45);
-  box-shadow: inset 0 0 0 1px rgba(215, 100, 59, 0.16);
+  box-shadow: none;
 }
 
 .presentation-panel {
@@ -319,9 +309,7 @@ pre {
   background: var(--stage-bg), var(--panel-strong);
   color: var(--stage-ink);
   border: 1px solid rgba(34, 31, 26, 0.08);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.82),
-    0 18px 55px rgba(56, 43, 24, 0.12);
+  box-shadow: none;
   padding: clamp(1.4rem, 3vw, 3rem);
   overflow: hidden;
 }
@@ -428,7 +416,7 @@ pre {
   object-fit: contain;
   border-radius: 18px;
   border: 1px solid rgba(34, 31, 26, 0.08);
-  box-shadow: 0 10px 30px rgba(56, 43, 24, 0.08);
+  box-shadow: none;
 }
 
 .slide table {
