@@ -104,6 +104,30 @@ export const THEME_OPTIONS = {
     muted: "557061",
     accent: "2F8D61",
   },
+  cobalt: {
+    label: "Cobalt",
+    background: "EAF0FF",
+    surface: "F8FAFF",
+    text: "1E2C52",
+    muted: "5D6F9A",
+    accent: "3B6EF3",
+  },
+  clay: {
+    label: "Clay",
+    background: "F8EEE7",
+    surface: "FFF9F5",
+    text: "40241C",
+    muted: "876357",
+    accent: "C86D4A",
+  },
+  nocturne: {
+    label: "Nocturne",
+    background: "141826",
+    surface: "1F2536",
+    text: "EEF2FF",
+    muted: "9EA9C7",
+    accent: "8D7DFF",
+  },
 };
 
 export const LAYOUT_OPTIONS = new Set(["default", "title", "two-column", "quote", "image-left", "full-bleed"]);

@@ -106,7 +106,7 @@ function addMarkdownBlocksToPpt(pptSlide, blocks, themeName, frame) {
         fontSize: 9,
         color: theme.text,
         border: { pt: 1, color: "D9D2C5" },
-        fill: themeName === "graphite" ? "242B36" : "FFFDF8",
+        fill: theme.surface,
       });
       y += Math.min(1.6, 0.42 + rows.length * 0.22);
       return;

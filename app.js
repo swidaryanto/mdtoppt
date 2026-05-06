@@ -44,6 +44,12 @@ const state = {
   markdown: "",
 };
 
+function populateThemeSelect() {
+  elements.themeSelect.innerHTML = Object.entries(THEME_OPTIONS)
+    .map(([value, theme]) => `<option value="${escapeAttribute(value)}">${theme.label}</option>`)
+    .join("");
+}
+
 function applySession(session = {}) {
   state.globalTheme = Object.hasOwn(THEME_OPTIONS, session.globalTheme) ? session.globalTheme : "warm";
   state.currentIndex = Number.isInteger(session.currentIndex) ? Math.max(0, session.currentIndex) : 0;
@@ -442,6 +448,7 @@ function bindDropZoneEvents() {
 }
 
 function init() {
+  populateThemeSelect();
   bindEditorEvents();
   bindExportEvents();
   bindPresentationEvents();
