@@ -8,7 +8,7 @@ Turn Markdown into presentation slides with live preview, theme control, and exp
 - Slide splitting with `---`
 - Layout directives: `title`, `two-column`, `quote`, `image-left`, `full-bleed`
 - Speaker notes via `:::notes ... :::`
-- Theme controls: `warm`, `graphite`, `spruce`
+- Theme controls: `warm`, `graphite`, `spruce`, `cobalt`, `clay`, `nocturne`
 - Export options:
   - Print / PDF
   - Raw Markdown (`.md`)

@@ -328,6 +328,27 @@ pre {
   --stage-accent: #2f8d61;
 }
 
+.slide-stage[data-theme="cobalt"] {
+  --stage-bg: linear-gradient(145deg, rgba(234, 240, 255, 0.98), rgba(210, 224, 255, 0.94));
+  --stage-ink: #1e2c52;
+  --stage-muted: #5d6f9a;
+  --stage-accent: #3b6ef3;
+}
+
+.slide-stage[data-theme="clay"] {
+  --stage-bg: linear-gradient(145deg, rgba(248, 238, 231, 0.98), rgba(237, 218, 205, 0.94));
+  --stage-ink: #40241c;
+  --stage-muted: #876357;
+  --stage-accent: #c86d4a;
+}
+
+.slide-stage[data-theme="nocturne"] {
+  --stage-bg: linear-gradient(150deg, rgba(20, 24, 38, 0.98), rgba(35, 41, 60, 0.94));
+  --stage-ink: #eef2ff;
+  --stage-muted: rgba(238, 242, 255, 0.72);
+  --stage-accent: #8d7dff;
+}
+
 .slide {
   height: 100%;
   display: flex;
@@ -701,6 +722,21 @@ pre {
   background: linear-gradient(160deg, rgba(225, 241, 232, 0.96), rgba(203, 228, 214, 0.92));
 }
 
+.slide-thumb[data-theme="cobalt"] {
+  background: linear-gradient(160deg, rgba(230, 238, 255, 0.96), rgba(201, 218, 255, 0.92));
+  color: #1e2c52;
+}
+
+.slide-thumb[data-theme="clay"] {
+  background: linear-gradient(160deg, rgba(248, 238, 231, 0.96), rgba(236, 216, 203, 0.92));
+  color: #40241c;
+}
+
+.slide-thumb[data-theme="nocturne"] {
+  background: linear-gradient(160deg, rgba(20, 24, 38, 0.96), rgba(42, 49, 71, 0.9));
+  color: #eef2ff;
+}
+
 .slide-thumb-index {
   font-size: 0.8rem;
   color: inherit;
@@ -852,6 +888,27 @@ body.presenting .slide-stage {
     --stage-ink: #1d372b;
     --stage-muted: #557061;
     --stage-accent: #2f8d61;
+  }
+
+  .print-slide[data-theme="cobalt"] {
+    --stage-bg: linear-gradient(145deg, rgba(234, 240, 255, 0.98), rgba(210, 224, 255, 0.94));
+    --stage-ink: #1e2c52;
+    --stage-muted: #5d6f9a;
+    --stage-accent: #3b6ef3;
+  }
+
+  .print-slide[data-theme="clay"] {
+    --stage-bg: linear-gradient(145deg, rgba(248, 238, 231, 0.98), rgba(237, 218, 205, 0.94));
+    --stage-ink: #40241c;
+    --stage-muted: #876357;
+    --stage-accent: #c86d4a;
+  }
+
+  .print-slide[data-theme="nocturne"] {
+    --stage-bg: linear-gradient(150deg, rgba(20, 24, 38, 0.98), rgba(35, 41, 60, 0.94));
+    --stage-ink: #eef2ff;
+    --stage-muted: rgba(238, 242, 255, 0.72);
+    --stage-accent: #8d7dff;
   }
 
   .print-slide:last-child {
