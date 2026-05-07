@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MD to PPT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="editor-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">MD to PPT</p>
+            <h1>Write or upload Markdown.</h1>
+            <p class="panel-copy">
+              Separate slides with <code>---</code>. The presentation updates as
+              you type.
+            </p>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <label class="upload-button" for="markdown-file">Upload `.md`</label>
+          <input id="markdown-file" type="file" accept=".md,text/markdown" />
+          <label class="upload-button" for="session-file">Import session</label>
+          <input id="session-file" type="file" accept=".json,application/json" />
+          <button id="load-sample" type="button">Load sample</button>
+          <button id="copy-markdown" type="button">Copy text</button>
+          <button id="export-markdown" type="button">Export `.md`</button>
+          <button id="export-session" type="button">Export session</button>
+          <label class="select-field">
+            <span>Theme</span>
+            <select id="theme-select" aria-label="Presentation theme"></select>
+          </label>
+        </div>
+
+        <div id="drop-zone" class="drop-zone">
+          <p class="drop-copy">
+            Drop a markdown file here, or paste into the editor. Use
+            <code>layout: two-column</code>, <code>theme: spruce</code>,
+            <code>+++ </code> for column breaks, and <code>:::notes</code> for speaker notes.
+          </p>
+          <textarea id="markdown-input" spellcheck="false" aria-label="Markdown input"></textarea>
+        </div>
+      </aside>
+
+      <main class="presentation-panel">
+        <div class="presentation-topbar">
+          <div class="presentation-meta">
+            <span id="slide-count">0 slides</span>
+            <span class="dot"></span>
+            <span id="slide-position">Slide 0 / 0</span>
+            <span id="slide-layout" class="meta-pill">Layout: default</span>
+            <span id="slide-density" class="meta-pill">Density: balanced</span>
+          </div>
+          <div class="presentation-actions">
+            <button id="export-pptx" type="button">Export `.pptx`</button>
+            <button id="present-mode" type="button">Present</button>
+            <button id="print-deck" type="button">Print / PDF</button>
+            <button id="prev-slide" type="button">Previous</button>
+            <button id="next-slide" type="button">Next</button>
+          </div>
+        </div>
+
+        <section class="stage-wrap">
+          <article id="slide-stage" class="slide-stage" aria-live="polite"></article>
+        </section>
+
+        <section class="support-row">
+          <div id="overflow-warning" class="support-card" hidden></div>
+          <div id="speaker-notes" class="support-card support-card-notes">
+            <p class="support-label">Speaker notes</p>
+            <p class="support-empty">No notes for this slide yet.</p>
+          </div>
+        </section>
+
+        <section>
+          <div id="slide-strip" class="slide-strip" aria-label="Slide overview"></div>
+        </section>
+      </main>
+    </div>
+
+    <template id="slide-card-template">
+      <button class="slide-thumb" type="button">
+        <span class="slide-thumb-index"></span>
+        <span class="slide-thumb-title"></span>
+      </button>
+    </template>
+
+    <script src="https://unpkg.com/pptxgenjs/dist/pptxgen.bundle.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

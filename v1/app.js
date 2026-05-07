@@ -1,9 +1,5 @@
 import { sampleMarkdown, THEME_OPTIONS } from "./config.js";
-import {
-  buildSlides,
-  escapeAttribute,
-  parseInlineMarkdown,
-} from "./markdown.js";
+import { buildSlides, escapeAttribute, getDensityAdvice, parseInlineMarkdown } from "./markdown.js";
 import { exportDeckAsPptx } from "./pptx-export.js";
 import {
   buildSessionPayload,
@@ -14,8 +10,6 @@ import {
   updateUrlState,
   writeSessionToStorage,
 } from "./session.js";
-
-/* ── Element References ───────────────────────────────────────── */
 
 const elements = {
   markdownInput: document.querySelector("#markdown-input"),
@@ -37,47 +31,29 @@ const elements = {
   slidePosition: document.querySelector("#slide-position"),
   slideLayout: document.querySelector("#slide-layout"),
   slideDensity: document.querySelector("#slide-density"),
+  overflowWarning: document.querySelector("#overflow-warning"),
   speakerNotes: document.querySelector("#speaker-notes"),
-  notesToggle: document.querySelector("#notes-toggle"),
-  helpToggle: document.querySelector("#toggle-help"),
-  helpPanel: document.querySelector("#help-panel"),
   slideCardTemplate: document.querySelector("#slide-card-template"),
   dropZone: document.querySelector("#drop-zone"),
 };
-
-/* ── State ────────────────────────────────────────────────────── */
 
 const state = {
   slides: [],
   currentIndex: 0,
   globalTheme: "warm",
   markdown: "",
-  notesOpen: false,
-  helpOpen: false,
 };
-
-/* ── Theme Select ─────────────────────────────────────────────── */
 
 function populateThemeSelect() {
   elements.themeSelect.innerHTML = Object.entries(THEME_OPTIONS)
-    .map(
-      ([value, theme]) =>
-        `<option value="${escapeAttribute(value)}">${theme.label}</option>`,
-    )
+    .map(([value, theme]) => `<option value="${escapeAttribute(value)}">${theme.label}</option>`)
     .join("");
 }
 
-/* ── Session ──────────────────────────────────────────────────── */
-
 function applySession(session = {}) {
-  state.globalTheme = Object.hasOwn(THEME_OPTIONS, session.globalTheme)
-    ? session.globalTheme
-    : "warm";
-  state.currentIndex = Number.isInteger(session.currentIndex)
-    ? Math.max(0, session.currentIndex)
-    : 0;
-  state.markdown =
-    typeof session.markdown === "string" ? session.markdown : sampleMarkdown;
+  state.globalTheme = Object.hasOwn(THEME_OPTIONS, session.globalTheme) ? session.globalTheme : "warm";
+  state.currentIndex = Number.isInteger(session.currentIndex) ? Math.max(0, session.currentIndex) : 0;
+  state.markdown = typeof session.markdown === "string" ? session.markdown : sampleMarkdown;
   elements.markdownInput.value = state.markdown;
   elements.themeSelect.value = state.globalTheme;
 }
@@ -95,27 +71,13 @@ function getSessionPayload() {
   });
 }
 
-/* ── Toast Helper ─────────────────────────────────────────────── */
-
-function showToast(button, message, duration = 1400) {
-  const original = button.dataset.originalText || button.textContent;
-  button.dataset.originalText = original;
-
-  // Find the text node (skip icon SVGs)
-  const textNodes = Array.from(button.childNodes).filter(
-    (n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim(),
-  );
-  const target = textNodes.length > 0 ? textNodes[0] : button;
-
-  const prev = target.textContent;
-  target.textContent = message;
+function setTemporaryButtonText(button, nextText, resetText = button.dataset.defaultLabel || button.textContent) {
+  const original = resetText;
+  button.textContent = nextText;
   window.setTimeout(() => {
-    target.textContent = prev;
-    delete button.dataset.originalText;
-  }, duration);
+    button.textContent = original;
+  }, 1400);
 }
-
-/* ── Onboarding ───────────────────────────────────────────────── */
 
 function getOnboardingMarkup() {
   return `
@@ -134,26 +96,20 @@ function getOnboardingMarkup() {
 - Point two</code></pre>
           </div>
           <div class="onboarding-card">
-            <p class="onboarding-label">Split</p>
-            <pre><code>---</code></pre>
-          </div>
-          <div class="onboarding-card">
             <p class="onboarding-label">Quote</p>
             <pre><code>layout: quote
 
-> Clear slides.</code></pre>
+> Clear slides guide attention.</code></pre>
           </div>
           <div class="onboarding-card">
             <p class="onboarding-label">Code</p>
             <pre><code>\`\`\`js
-console.log("Hi");
+console.log("Hello");
 \`\`\`</code></pre>
           </div>
           <div class="onboarding-card">
-            <p class="onboarding-label">Notes</p>
-            <pre><code>:::notes
-Talk track.
-:::</code></pre>
+            <p class="onboarding-label">Image</p>
+            <pre><code>![Alt text](https://...)</code></pre>
           </div>
         </div>
       </div>
@@ -161,11 +117,10 @@ Talk track.
   `;
 }
 
-/* ── Speaker Notes ────────────────────────────────────────────── */
-
 function updateSpeakerNotes(slide) {
   if (!slide || !slide.notes) {
     elements.speakerNotes.innerHTML = `
+      <p class="support-label">Speaker notes</p>
       <p class="support-empty">No notes for this slide yet.</p>
     `;
     return;
@@ -177,18 +132,46 @@ function updateSpeakerNotes(slide) {
     .map((line) => `<p>${parseInlineMarkdown(line)}</p>`)
     .join("");
 
-  elements.speakerNotes.innerHTML = `<div class="speaker-notes-copy">${notesHtml}</div>`;
+  elements.speakerNotes.innerHTML = `
+    <p class="support-label">Speaker notes</p>
+    <div class="speaker-notes-copy">${notesHtml}</div>
+  `;
 }
 
-/* ── Render ───────────────────────────────────────────────────── */
+function updateOverflowWarning(slide) {
+  const slideElement = elements.slideStage.querySelector(".slide");
+  if (!slide || !slideElement) {
+    elements.overflowWarning.hidden = true;
+    elements.overflowWarning.textContent = "";
+    return;
+  }
+
+  const hasOverflow = slideElement.scrollHeight > slideElement.clientHeight + 8;
+  const densityAdvice = getDensityAdvice(slide.densityLabel);
+
+  if (!hasOverflow && !densityAdvice) {
+    elements.overflowWarning.hidden = true;
+    elements.overflowWarning.textContent = "";
+    return;
+  }
+
+  elements.overflowWarning.hidden = false;
+  elements.overflowWarning.textContent = hasOverflow
+    ? "Content is overflowing this slide. Reduce copy, split the slide, or pick a stronger layout."
+    : densityAdvice;
+  elements.overflowWarning.dataset.state = hasOverflow ? "overflow" : "dense";
+}
 
 function renderEmptyStage() {
   elements.slideStage.innerHTML = getOnboardingMarkup();
   elements.slideCount.textContent = "0 slides";
-  elements.slidePosition.textContent = "0 / 0";
-  elements.slideLayout.textContent = "default";
-  elements.slideDensity.hidden = true;
+  elements.slidePosition.textContent = "Slide 0 / 0";
+  elements.slideLayout.textContent = "Layout: default";
+  elements.slideDensity.textContent = "Density: balanced";
+  elements.slideDensity.dataset.state = "balanced";
   elements.slideStage.dataset.theme = state.globalTheme;
+  elements.overflowWarning.hidden = true;
+  elements.overflowWarning.textContent = "";
   updateSpeakerNotes(null);
   elements.prevButton.disabled = true;
   elements.nextButton.disabled = true;
@@ -203,34 +186,26 @@ function renderStage() {
   const slide = state.slides[state.currentIndex];
   elements.slideStage.dataset.theme = slide.theme;
   elements.slideStage.innerHTML = `<div class="slide slide-layout-${slide.layout}" data-density="${slide.densityLabel}">${slide.markup}</div>`;
-
-  // Badges
   elements.slideCount.textContent = `${state.slides.length} ${state.slides.length === 1 ? "slide" : "slides"}`;
-  elements.slidePosition.textContent = `${state.currentIndex + 1} / ${state.slides.length}`;
-  elements.slideLayout.textContent = slide.layout;
-
-  // Density badge — only show when not "balanced"
-  if (slide.densityLabel === "balanced") {
-    elements.slideDensity.hidden = true;
-  } else {
-    elements.slideDensity.hidden = false;
-    elements.slideDensity.textContent = slide.densityLabel;
-    elements.slideDensity.dataset.state = slide.densityLabel;
-  }
-
+  elements.slidePosition.textContent = `Slide ${state.currentIndex + 1} / ${state.slides.length}`;
+  elements.slideLayout.textContent = `Layout: ${slide.layout}`;
+  elements.slideDensity.textContent = `Density: ${slide.densityLabel}`;
+  elements.slideDensity.dataset.state = slide.densityLabel;
   updateSpeakerNotes(slide);
   elements.prevButton.disabled = state.currentIndex === 0;
   elements.nextButton.disabled = state.currentIndex === state.slides.length - 1;
+
+  window.requestAnimationFrame(() => {
+    updateOverflowWarning(slide);
+  });
 }
 
 function renderStrip() {
   elements.slideStrip.innerHTML = "";
 
   state.slides.forEach((slide, index) => {
-    const slideCard =
-      elements.slideCardTemplate.content.firstElementChild.cloneNode(true);
-    slideCard.querySelector(".slide-thumb-index").textContent =
-      `Slide ${index + 1}`;
+    const slideCard = elements.slideCardTemplate.content.firstElementChild.cloneNode(true);
+    slideCard.querySelector(".slide-thumb-index").textContent = `Slide ${index + 1}`;
     slideCard.querySelector(".slide-thumb-title").textContent = slide.title;
     slideCard.classList.toggle("active", index === state.currentIndex);
     slideCard.dataset.theme = slide.theme;
@@ -260,12 +235,11 @@ function render() {
   updateUrlState(state);
 }
 
-/* ── File Loading ─────────────────────────────────────────────── */
-
 async function loadMarkdownFile(file) {
   if (!file) {
     return;
   }
+
   elements.markdownInput.value = await file.text();
   state.currentIndex = 0;
   render();
@@ -275,24 +249,17 @@ async function loadSessionFile(file) {
   if (!file) {
     return;
   }
+
   const session = JSON.parse(await file.text());
   applySession(session);
   render();
 }
 
-/* ── Restore Session ──────────────────────────────────────────── */
-
 function restoreInitialSession() {
   const storedSession = readSessionFromStorage();
   const urlState = readUrlState();
 
-  applySession(
-    storedSession || {
-      markdown: sampleMarkdown,
-      globalTheme: "warm",
-      currentIndex: 0,
-    },
-  );
+  applySession(storedSession || { markdown: sampleMarkdown, globalTheme: "warm", currentIndex: 0 });
 
   if (urlState.theme) {
     state.globalTheme = urlState.theme;
@@ -303,56 +270,6 @@ function restoreInitialSession() {
     state.currentIndex = Math.max(0, urlState.slideIndex);
   }
 }
-
-/* ── Dropdown Behavior ────────────────────────────────────────── */
-
-function initDropdowns() {
-  const dropdowns = document.querySelectorAll("[data-dropdown]");
-
-  dropdowns.forEach((dropdown) => {
-    const trigger = dropdown.querySelector("[data-dropdown-trigger]");
-
-    trigger.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const isOpen = dropdown.hasAttribute("data-open");
-
-      // Close all other dropdowns
-      dropdowns.forEach((d) => d.removeAttribute("data-open"));
-
-      if (!isOpen) {
-        dropdown.setAttribute("data-open", "");
-      }
-    });
-  });
-
-  // Close dropdowns on outside click
-  document.addEventListener("click", () => {
-    dropdowns.forEach((d) => d.removeAttribute("data-open"));
-  });
-
-  // Close dropdowns on Escape
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      dropdowns.forEach((d) => d.removeAttribute("data-open"));
-    }
-  });
-
-  // Prevent dropdown menu clicks from closing
-  document.querySelectorAll(".dropdown-menu").forEach((menu) => {
-    menu.addEventListener("click", (e) => {
-      e.stopPropagation();
-      // Close after a dropdown item is clicked (except labels for file inputs)
-      if (
-        e.target.closest(".dropdown-item") &&
-        !e.target.closest("label[for]")
-      ) {
-        dropdowns.forEach((d) => d.removeAttribute("data-open"));
-      }
-    });
-  });
-}
-
-/* ── Editor Events ────────────────────────────────────────────── */
 
 function bindEditorEvents() {
   elements.markdownInput.addEventListener("input", render);
@@ -368,43 +285,34 @@ function bindEditorEvents() {
     if (!file) {
       return;
     }
+
     try {
       await loadSessionFile(file);
-      showToast(elements.exportSessionButton, "Session loaded");
+      setTemporaryButtonText(elements.exportSessionButton, "Session loaded", "Export session");
     } catch {
-      showToast(elements.exportSessionButton, "Load failed");
+      setTemporaryButtonText(elements.exportSessionButton, "Load failed", "Export session");
     }
     elements.sessionFileInput.value = "";
   });
 
   elements.loadSampleButton.addEventListener("click", () => {
-    applySession({
-      markdown: sampleMarkdown,
-      globalTheme: "warm",
-      currentIndex: 0,
-    });
+    applySession({ markdown: sampleMarkdown, globalTheme: "warm", currentIndex: 0 });
     render();
   });
 
   elements.copyButton.addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(elements.markdownInput.value);
-      showToast(elements.copyButton, "Copied!");
+      setTemporaryButtonText(elements.copyButton, "Copied", "Copy text");
     } catch {
-      showToast(elements.copyButton, "Copy failed");
+      setTemporaryButtonText(elements.copyButton, "Copy failed", "Copy text");
     }
   });
 }
 
-/* ── Export Events ────────────────────────────────────────────── */
-
 function bindExportEvents() {
   elements.exportMarkdownButton.addEventListener("click", () => {
-    createDownload(
-      getDeckFilename("md"),
-      elements.markdownInput.value,
-      "text/markdown;charset=utf-8",
-    );
+    createDownload(getDeckFilename("md"), elements.markdownInput.value, "text/markdown;charset=utf-8");
   });
 
   elements.exportSessionButton.addEventListener("click", () => {
@@ -417,19 +325,20 @@ function bindExportEvents() {
 
   elements.exportPptxButton.addEventListener("click", async () => {
     if (!state.slides.length) {
-      showToast(elements.exportPptxButton, "No slides");
+      setTemporaryButtonText(elements.exportPptxButton, "No slides");
       return;
     }
 
     elements.exportPptxButton.disabled = true;
-    showToast(elements.exportPptxButton, "Exporting...");
+    elements.exportPptxButton.textContent = "Exporting...";
     try {
       await exportDeckAsPptx(state.slides, getDeckFilename("pptx"));
-      showToast(elements.exportPptxButton, "PPTX ready!");
+      setTemporaryButtonText(elements.exportPptxButton, "PPTX ready", "Export `.pptx`");
     } catch {
-      showToast(elements.exportPptxButton, "Export failed");
+      setTemporaryButtonText(elements.exportPptxButton, "Export failed", "Export `.pptx`");
     } finally {
       elements.exportPptxButton.disabled = false;
+      elements.exportPptxButton.textContent = "Export `.pptx`";
     }
   });
 
@@ -454,8 +363,6 @@ function bindExportEvents() {
   });
 }
 
-/* ── Presentation Events ──────────────────────────────────────── */
-
 function bindPresentationEvents() {
   elements.themeSelect.addEventListener("change", () => {
     state.globalTheme = elements.themeSelect.value;
@@ -468,10 +375,7 @@ function bindPresentationEvents() {
   });
 
   elements.nextButton.addEventListener("click", () => {
-    state.currentIndex = Math.min(
-      state.slides.length - 1,
-      state.currentIndex + 1,
-    );
+    state.currentIndex = Math.min(state.slides.length - 1, state.currentIndex + 1);
     render();
   });
 
@@ -484,9 +388,11 @@ function bindPresentationEvents() {
           await document.documentElement.requestFullscreen();
         }
       } catch {
-        // Fullscreen can fail silently
+        // Fullscreen can fail silently in some browsers. Present mode still works.
       }
+      elements.presentButton.textContent = "Exit present";
     } else {
+      elements.presentButton.textContent = "Present";
       if (document.fullscreenElement) {
         await document.exitFullscreen();
       }
@@ -494,20 +400,16 @@ function bindPresentationEvents() {
   });
 
   document.addEventListener("fullscreenchange", () => {
-    if (
-      !document.fullscreenElement &&
-      document.body.classList.contains("presenting")
-    ) {
+    if (!document.fullscreenElement && document.body.classList.contains("presenting")) {
       document.body.classList.remove("presenting");
+      elements.presentButton.textContent = "Present";
     }
   });
 
   window.addEventListener("keydown", (event) => {
-    if (
-      event.key === "Escape" &&
-      document.body.classList.contains("presenting")
-    ) {
+    if (event.key === "Escape" && document.body.classList.contains("presenting")) {
       document.body.classList.remove("presenting");
+      elements.presentButton.textContent = "Present";
       if (document.fullscreenElement) {
         document.exitFullscreen();
       }
@@ -523,30 +425,6 @@ function bindPresentationEvents() {
     }
   });
 }
-
-/* ── Speaker Notes Toggle ─────────────────────────────────────── */
-
-function bindNotesToggle() {
-  elements.notesToggle.addEventListener("click", () => {
-    state.notesOpen = !state.notesOpen;
-    elements.speakerNotes.hidden = !state.notesOpen;
-    elements.notesToggle.parentElement.classList.toggle(
-      "notes-open",
-      state.notesOpen,
-    );
-  });
-}
-
-/* ── Help Toggle ──────────────────────────────────────────────── */
-
-function bindHelpToggle() {
-  elements.helpToggle.addEventListener("click", () => {
-    state.helpOpen = !state.helpOpen;
-    elements.helpPanel.hidden = !state.helpOpen;
-  });
-}
-
-/* ── Drop Zone ────────────────────────────────────────────────── */
 
 function bindDropZoneEvents() {
   ["dragenter", "dragover"].forEach((eventName) => {
@@ -569,16 +447,11 @@ function bindDropZoneEvents() {
   });
 }
 
-/* ── Init ─────────────────────────────────────────────────────── */
-
 function init() {
   populateThemeSelect();
-  initDropdowns();
   bindEditorEvents();
   bindExportEvents();
   bindPresentationEvents();
-  bindNotesToggle();
-  bindHelpToggle();
   bindDropZoneEvents();
   restoreInitialSession();
   render();
