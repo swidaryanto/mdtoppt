@@ -1,100 +1,527 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MD to PPT</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body>
-    <div class="app-shell">
-      <aside class="editor-panel">
-        <div class="panel-header">
-          <div>
-            <p class="eyebrow">MD to PPT</p>
-            <h1>Write or upload Markdown.</h1>
-            <p class="panel-copy">
-              Separate slides with <code>---</code>. The presentation updates as
-              you type.
-            </p>
-          </div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>MD to PPT</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="./styles.css" />
+    </head>
+    <body>
+        <div class="app-shell">
+            <!-- ── Top Bar ────────────────────────────────────────────── -->
+            <header class="top-bar">
+                <div class="top-bar-brand">
+                    <span class="brand-mark">M</span>
+                    <span class="brand-text">MD to PPT</span>
+                </div>
+
+                <nav class="top-bar-actions">
+                    <!-- File dropdown -->
+                    <div class="dropdown" data-dropdown>
+                        <button
+                            class="btn btn-ghost dropdown-trigger"
+                            data-dropdown-trigger
+                            type="button"
+                        >
+                            <svg
+                                class="icon"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                            >
+                                <path
+                                    d="M3 7l5-4 2 1.5L14 2l3 3v12a1 1 0 01-1 1H4a1 1 0 01-1-1V7z"
+                                />
+                                <path d="M3 7h4a1 1 0 011 1v8" />
+                            </svg>
+                            File
+                            <svg class="chevron" viewBox="0 0 10 6">
+                                <path
+                                    d="M1 1l4 4 4-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                        </button>
+                        <div class="dropdown-menu" data-dropdown-menu>
+                            <label class="dropdown-item" for="markdown-file">
+                                <svg
+                                    class="icon"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                >
+                                    <path
+                                        d="M3 14v3a1 1 0 001 1h12a1 1 0 001-1v-3M10 3v10M6 9l4 4 4-4"
+                                    />
+                                </svg>
+                                Upload <code>.md</code>
+                            </label>
+                            <input
+                                id="markdown-file"
+                                type="file"
+                                accept=".md,text/markdown"
+                            />
+                            <label class="dropdown-item" for="session-file">
+                                <svg
+                                    class="icon"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                >
+                                    <path
+                                        d="M3 14v3a1 1 0 001 1h12a1 1 0 001-1v-3M10 3v10M6 9l4 4 4-4"
+                                    />
+                                </svg>
+                                Import session
+                            </label>
+                            <input
+                                id="session-file"
+                                type="file"
+                                accept=".json,application/json"
+                            />
+                            <button
+                                class="dropdown-item"
+                                id="load-sample"
+                                type="button"
+                            >
+                                <svg
+                                    class="icon"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                >
+                                    <path d="M4 4h12v12H4z" />
+                                    <path d="M8 8h4v4H8z" />
+                                </svg>
+                                Load sample
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <button
+                                class="dropdown-item"
+                                id="export-markdown"
+                                type="button"
+                            >
+                                <svg
+                                    class="icon"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                >
+                                    <path
+                                        d="M3 17V4a1 1 0 011-1h12a1 1 0 011 1v13M7 8h6M7 11h4"
+                                    />
+                                </svg>
+                                Export <code>.md</code>
+                            </button>
+                            <button
+                                class="dropdown-item"
+                                id="export-session"
+                                type="button"
+                            >
+                                <svg
+                                    class="icon"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                >
+                                    <rect
+                                        x="3"
+                                        y="3"
+                                        width="14"
+                                        height="14"
+                                        rx="2"
+                                    />
+                                    <path d="M7 7h6M7 10h6M7 13h3" />
+                                </svg>
+                                Export session
+                            </button>
+                            <button
+                                class="dropdown-item"
+                                id="copy-markdown"
+                                type="button"
+                            >
+                                <svg
+                                    class="icon"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                >
+                                    <rect
+                                        x="6"
+                                        y="6"
+                                        width="10"
+                                        height="12"
+                                        rx="1.5"
+                                    />
+                                    <path d="M4 14V4a1.5 1.5 0 011.5-1.5H13" />
+                                </svg>
+                                Copy to clipboard
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Theme dropdown -->
+                    <div class="dropdown select-field" data-dropdown>
+                        <label
+                            class="dropdown-trigger select-trigger"
+                            data-dropdown-trigger
+                        >
+                            <svg
+                                class="icon"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                            >
+                                <circle cx="10" cy="10" r="7" />
+                                <path d="M10 3v14M3 10h14" />
+                            </svg>
+                            <select
+                                id="theme-select"
+                                aria-label="Presentation theme"
+                            ></select>
+                        </label>
+                    </div>
+
+                    <div class="top-bar-spacer"></div>
+
+                    <!-- Present button (primary) -->
+                    <button
+                        class="btn btn-primary"
+                        id="present-mode"
+                        type="button"
+                    >
+                        <svg
+                            class="icon"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                        >
+                            <path d="M6 4l10 6-10 6V4z" />
+                        </svg>
+                        Present
+                    </button>
+
+                    <!-- Export dropdown -->
+                    <div class="dropdown" data-dropdown>
+                        <button
+                            class="btn btn-ghost dropdown-trigger"
+                            data-dropdown-trigger
+                            type="button"
+                        >
+                            <svg
+                                class="icon"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                            >
+                                <path
+                                    d="M3 17V7l7-5 7 5v10a1 1 0 01-1 1H4a1 1 0 01-1-1z"
+                                />
+                                <path d="M8 17v-5h4v5" />
+                            </svg>
+                            Export
+                            <svg class="chevron" viewBox="0 0 10 6">
+                                <path
+                                    d="M1 1l4 4 4-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                        </button>
+                        <div class="dropdown-menu" data-dropdown-menu>
+                            <button
+                                class="dropdown-item"
+                                id="export-pptx"
+                                type="button"
+                            >
+                                <svg
+                                    class="icon"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                >
+                                    <rect
+                                        x="3"
+                                        y="2"
+                                        width="14"
+                                        height="16"
+                                        rx="2"
+                                    />
+                                    <path d="M7 7h6M7 10h6M7 13h4" />
+                                </svg>
+                                Export <code>.pptx</code>
+                            </button>
+                            <button
+                                class="dropdown-item"
+                                id="print-deck"
+                                type="button"
+                            >
+                                <svg
+                                    class="icon"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                >
+                                    <rect
+                                        x="4"
+                                        y="8"
+                                        width="12"
+                                        height="8"
+                                        rx="1"
+                                    />
+                                    <path d="M6 8V3h8v5M6 12h8" />
+                                </svg>
+                                Print / PDF
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+
+            <!-- ── Main Content ───────────────────────────────────────── -->
+            <div class="main-content">
+                <!-- Editor Panel -->
+                <aside class="editor-panel">
+                    <div class="editor-header">
+                        <span class="editor-label">
+                            <svg
+                                class="icon"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                            >
+                                <path d="M4 4h12v12H4z" />
+                                <path d="M7 8h6M7 11h6" />
+                            </svg>
+                            Editor
+                        </span>
+                        <button
+                            class="btn btn-tiny"
+                            id="toggle-help"
+                            type="button"
+                            title="Markdown syntax help"
+                        >
+                            <svg
+                                class="icon"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                            >
+                                <circle cx="10" cy="10" r="7.5" />
+                                <path
+                                    d="M8 7.5a2 2 0 012.8-1.8 2 2 0 01.7 3.3c-.5.5-1 .8-1 1.5V12"
+                                />
+                                <circle
+                                    cx="10.5"
+                                    cy="14.5"
+                                    r="0.5"
+                                    fill="currentColor"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="help-panel" id="help-panel" hidden>
+                        <div class="help-grid">
+                            <div class="help-item">
+                                <code># Heading</code><span>Slide title</span>
+                            </div>
+                            <div class="help-item">
+                                <code>--- </code><span>Split slides</span>
+                            </div>
+                            <div class="help-item">
+                                <code>layout: two-column</code
+                                ><span>Two columns</span>
+                            </div>
+                            <div class="help-item">
+                                <code>+++ </code><span>Column break</span>
+                            </div>
+                            <div class="help-item">
+                                <code>layout: quote</code
+                                ><span>Quote layout</span>
+                            </div>
+                            <div class="help-item">
+                                <code>layout: image-left</code
+                                ><span>Image + text</span>
+                            </div>
+                            <div class="help-item">
+                                <code>layout: full-bleed</code
+                                ><span>Full image</span>
+                            </div>
+                            <div class="help-item">
+                                <code>layout: title</code
+                                ><span>Title slide</span>
+                            </div>
+                            <div class="help-item">
+                                <code>theme: spruce</code
+                                ><span>Per-slide theme</span>
+                            </div>
+                            <div class="help-item">
+                                <code>:::notes ... :::</code
+                                ><span>Speaker notes</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="drop-zone" class="drop-zone">
+                        <textarea
+                            id="markdown-input"
+                            spellcheck="false"
+                            aria-label="Markdown input"
+                            placeholder="Write your markdown here...&#10;&#10;Use --- to split slides&#10;Use layout: two-column for columns&#10;Use :::notes for speaker notes"
+                        ></textarea>
+                    </div>
+                </aside>
+
+                <!-- Presentation Panel -->
+                <main class="presentation-panel">
+                    <!-- Slide Preview -->
+                    <section class="stage-wrap">
+                        <article
+                            id="slide-stage"
+                            class="slide-stage"
+                            aria-live="polite"
+                        ></article>
+                    </section>
+
+                    <!-- Inline Navigation -->
+                    <div class="slide-nav">
+                        <button
+                            class="btn btn-nav"
+                            id="prev-slide"
+                            type="button"
+                            disabled
+                        >
+                            <svg
+                                class="icon"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M12 4l-6 6 6 6" />
+                            </svg>
+                        </button>
+                        <span class="slide-counter" id="slide-position"
+                            >0 / 0</span
+                        >
+                        <button
+                            class="btn btn-nav"
+                            id="next-slide"
+                            type="button"
+                            disabled
+                        >
+                            <svg
+                                class="icon"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M8 4l6 6-6 6" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Slide Metadata Badges -->
+                    <div class="slide-badges">
+                        <span class="badge" id="slide-count">0 slides</span>
+                        <span class="badge" id="slide-layout">default</span>
+                        <span
+                            class="badge badge-warning"
+                            id="slide-density"
+                            hidden
+                        ></span>
+                    </div>
+
+                    <!-- Speaker Notes (collapsible) -->
+                    <section class="speaker-notes-section">
+                        <button
+                            class="speaker-notes-toggle"
+                            id="notes-toggle"
+                            type="button"
+                        >
+                            <svg
+                                class="icon"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                            >
+                                <path d="M4 5h12M4 10h12M4 15h8" />
+                            </svg>
+                            Speaker Notes
+                            <svg class="chevron" viewBox="0 0 10 6">
+                                <path
+                                    d="M1 1l4 4 4-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                        </button>
+                        <div
+                            class="speaker-notes-body"
+                            id="speaker-notes"
+                            hidden
+                        >
+                            <p class="support-empty">
+                                No notes for this slide yet.
+                            </p>
+                        </div>
+                    </section>
+                </main>
+            </div>
+
+            <!-- ── Slide Strip ────────────────────────────────────────── -->
+            <section class="slide-strip-wrap">
+                <div
+                    id="slide-strip"
+                    class="slide-strip"
+                    aria-label="Slide overview"
+                ></div>
+            </section>
         </div>
 
-        <div class="toolbar">
-          <label class="upload-button" for="markdown-file">Upload `.md`</label>
-          <input id="markdown-file" type="file" accept=".md,text/markdown" />
-          <label class="upload-button" for="session-file">Import session</label>
-          <input id="session-file" type="file" accept=".json,application/json" />
-          <button id="load-sample" type="button">Load sample</button>
-          <button id="copy-markdown" type="button">Copy text</button>
-          <button id="export-markdown" type="button">Export `.md`</button>
-          <button id="export-session" type="button">Export session</button>
-          <label class="select-field">
-            <span>Theme</span>
-            <select id="theme-select" aria-label="Presentation theme"></select>
-          </label>
-        </div>
+        <template id="slide-card-template">
+            <button class="slide-thumb" type="button">
+                <span class="slide-thumb-index"></span>
+                <span class="slide-thumb-title"></span>
+            </button>
+        </template>
 
-        <div id="drop-zone" class="drop-zone">
-          <p class="drop-copy">
-            Drop a markdown file here, or paste into the editor. Use
-            <code>layout: two-column</code>, <code>theme: spruce</code>,
-            <code>+++ </code> for column breaks, and <code>:::notes</code> for speaker notes.
-          </p>
-          <textarea id="markdown-input" spellcheck="false" aria-label="Markdown input"></textarea>
-        </div>
-      </aside>
-
-      <main class="presentation-panel">
-        <div class="presentation-topbar">
-          <div class="presentation-meta">
-            <span id="slide-count">0 slides</span>
-            <span class="dot"></span>
-            <span id="slide-position">Slide 0 / 0</span>
-            <span id="slide-layout" class="meta-pill">Layout: default</span>
-            <span id="slide-density" class="meta-pill">Density: balanced</span>
-          </div>
-          <div class="presentation-actions">
-            <button id="export-pptx" type="button">Export `.pptx`</button>
-            <button id="present-mode" type="button">Present</button>
-            <button id="print-deck" type="button">Print / PDF</button>
-            <button id="prev-slide" type="button">Previous</button>
-            <button id="next-slide" type="button">Next</button>
-          </div>
-        </div>
-
-        <section class="stage-wrap">
-          <article id="slide-stage" class="slide-stage" aria-live="polite"></article>
-        </section>
-
-        <section class="support-row">
-          <div id="overflow-warning" class="support-card" hidden></div>
-          <div id="speaker-notes" class="support-card support-card-notes">
-            <p class="support-label">Speaker notes</p>
-            <p class="support-empty">No notes for this slide yet.</p>
-          </div>
-        </section>
-
-        <section>
-          <div id="slide-strip" class="slide-strip" aria-label="Slide overview"></div>
-        </section>
-      </main>
-    </div>
-
-    <template id="slide-card-template">
-      <button class="slide-thumb" type="button">
-        <span class="slide-thumb-index"></span>
-        <span class="slide-thumb-title"></span>
-      </button>
-    </template>
-
-    <script src="https://unpkg.com/pptxgenjs/dist/pptxgen.bundle.js"></script>
-    <script type="module" src="./app.js"></script>
-  </body>
+        <script src="https://unpkg.com/pptxgenjs/dist/pptxgen.bundle.js"></script>
+        <script type="module" src="./app.js"></script>
+    </body>
 </html>
