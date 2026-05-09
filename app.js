@@ -26,7 +26,8 @@ const elements = {
   exportMarkdownButton: document.querySelector("#export-markdown"),
   exportSessionButton: document.querySelector("#export-session"),
   exportPptxButton: document.querySelector("#export-pptx"),
-  themeSelect: document.querySelector("#theme-select"),
+  themeLabel: document.querySelector("#theme-label"),
+  themeMenu: document.querySelector("#theme-menu"),
   prevButton: document.querySelector("#prev-slide"),
   nextButton: document.querySelector("#next-slide"),
   presentButton: document.querySelector("#present-mode"),
@@ -59,12 +60,21 @@ const state = {
 /* ── Theme Select ─────────────────────────────────────────────── */
 
 function populateThemeSelect() {
-  elements.themeSelect.innerHTML = Object.entries(THEME_OPTIONS)
+  elements.themeMenu.innerHTML = Object.entries(THEME_OPTIONS)
     .map(
       ([value, theme]) =>
-        `<option value="${escapeAttribute(value)}">${theme.label}</option>`,
+        `<button class="dropdown-item" type="button" data-theme="${escapeAttribute(value)}">${theme.label}</button>`,
     )
     .join("");
+
+  elements.themeMenu.addEventListener("click", (event) => {
+    const item = event.target.closest("[data-theme]");
+    if (!item) return;
+    state.globalTheme = item.dataset.theme;
+    elements.themeLabel.textContent = THEME_OPTIONS[state.globalTheme].label;
+    elements.themeMenu.closest("[data-dropdown]").removeAttribute("data-open");
+    render();
+  });
 }
 
 /* ── Session ──────────────────────────────────────────────────── */
@@ -79,7 +89,7 @@ function applySession(session = {}) {
   state.markdown =
     typeof session.markdown === "string" ? session.markdown : sampleMarkdown;
   elements.markdownInput.value = state.markdown;
-  elements.themeSelect.value = state.globalTheme;
+  elements.themeLabel.textContent = THEME_OPTIONS[state.globalTheme].label;
 }
 
 function getDeckFilename(extension) {
@@ -296,7 +306,7 @@ function restoreInitialSession() {
 
   if (urlState.theme) {
     state.globalTheme = urlState.theme;
-    elements.themeSelect.value = urlState.theme;
+    elements.themeLabel.textContent = THEME_OPTIONS[state.globalTheme].label;
   }
 
   if (Number.isInteger(urlState.slideIndex)) {
@@ -457,11 +467,6 @@ function bindExportEvents() {
 /* ── Presentation Events ──────────────────────────────────────── */
 
 function bindPresentationEvents() {
-  elements.themeSelect.addEventListener("change", () => {
-    state.globalTheme = elements.themeSelect.value;
-    render();
-  });
-
   elements.prevButton.addEventListener("click", () => {
     state.currentIndex = Math.max(0, state.currentIndex - 1);
     render();
