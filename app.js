@@ -22,7 +22,6 @@ const elements = {
   fileInput: document.querySelector("#markdown-file"),
   sessionFileInput: document.querySelector("#session-file"),
   loadSampleButton: document.querySelector("#load-sample"),
-  copyButton: document.querySelector("#copy-markdown"),
   exportMarkdownButton: document.querySelector("#export-markdown"),
   exportSessionButton: document.querySelector("#export-session"),
   exportPptxButton: document.querySelector("#export-pptx"),
@@ -394,15 +393,6 @@ function bindEditorEvents() {
       currentIndex: 0,
     });
     render();
-  });
-
-  elements.copyButton.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(elements.markdownInput.value);
-      showToast(elements.copyButton, "Copied!");
-    } catch {
-      showToast(elements.copyButton, "Copy failed");
-    }
   });
 }
 
