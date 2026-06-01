@@ -3,7 +3,7 @@ import {
   buildSlides,
   escapeAttribute,
   parseInlineMarkdown,
-} from "./markdown.js";
+} from "./markdown.js?v=fit-2";
 import { exportDeckAsPptx } from "./pptx-export.js";
 import {
   buildSessionPayload,

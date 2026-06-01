@@ -7,6 +7,7 @@ const HORIZONTAL_RULE_PATTERN = /^(-{3,}|\*{3,}|_{3,})$/;
 const INLINE_IMAGE_PATTERN = /!\[([^\]]*)\]\(((?:[^()\s]+|\([^)]*\))+)(?:\s+"([^"]+)")?\)/;
 const INLINE_IMAGE_GLOBAL_PATTERN = /!\[([^\]]*)\]\(((?:[^()\s]+|\([^)]*\))+)(?:\s+"([^"]+)")?\)/g;
 const INLINE_LINK_GLOBAL_PATTERN = /\[([^\]]+)\]\(((?:[^()\s]+|\([^)]*\))+)\)/g;
+const AUTO_SPLIT_THRESHOLD = 160;
 
 export function escapeHtml(value) {
   return String(value)
@@ -407,6 +408,215 @@ function parseSlideConfig(markdown) {
   return { content, layout, theme };
 }
 
+function getSlideDirectiveLines(markdown) {
+  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+  const directives = [];
+  let index = 0;
+
+  while (index < lines.length) {
+    const trimmed = lines[index].trim();
+
+    if (!trimmed) {
+      if (directives.length) {
+        directives.push("");
+      }
+      index += 1;
+      continue;
+    }
+
+    if (!/^(layout|theme)\s*:/i.test(trimmed)) {
+      break;
+    }
+
+    if (/^theme\s*:/i.test(trimmed)) {
+      directives.push(lineWithoutLayout(lines[index]));
+    }
+
+    index += 1;
+  }
+
+  return directives.filter((line, lineIndex, all) => line || lineIndex < all.length - 1);
+}
+
+function lineWithoutLayout(line) {
+  return /^layout\s*:/i.test(line.trim()) ? "" : line;
+}
+
+function splitDenseContent(content) {
+  const lines = content.replace(/\r\n/g, "\n").split("\n");
+  const chunks = [];
+  let current = [];
+  let parentHeading = "";
+
+  function hasContent(buffer) {
+    return buffer.some((line) => line.trim());
+  }
+
+  function hasBodyContent(buffer) {
+    return buffer.some((line) => {
+      const trimmed = line.trim();
+      return trimmed && !/^#{2,4}\s+/.test(trimmed);
+    });
+  }
+
+  function pushCurrent() {
+    const chunk = current.join("\n").trim();
+    if (chunk) {
+      chunks.push(chunk);
+    }
+    current = [];
+  }
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    const isSectionHeading = /^#{2,4}\s+/.test(trimmed);
+
+    if (/^##\s+/.test(trimmed)) {
+      parentHeading = line;
+    }
+
+    if (isSectionHeading && hasBodyContent(current)) {
+      pushCurrent();
+      if (/^#{3,4}\s+/.test(trimmed) && parentHeading && parentHeading !== line) {
+        current.push(parentHeading, "");
+      }
+    }
+
+    current.push(line);
+  });
+
+  pushCurrent();
+
+  const refinedChunks = chunks.flatMap(splitOversizedChunk);
+  return refinedChunks.length > 1 ? refinedChunks : [content];
+}
+
+function splitOversizedChunk(chunk) {
+  if (getContentDensityScore(chunk) <= AUTO_SPLIT_THRESHOLD) {
+    return [chunk];
+  }
+
+  const lines = chunk.replace(/\r\n/g, "\n").split("\n");
+  const context = [];
+  let bodyStartIndex = 0;
+
+  while (bodyStartIndex < lines.length) {
+    const trimmed = lines[bodyStartIndex].trim();
+    if (!trimmed || /^#{2,4}\s+/.test(trimmed)) {
+      context.push(lines[bodyStartIndex]);
+      bodyStartIndex += 1;
+      continue;
+    }
+    break;
+  }
+
+  const bodyBlocks = splitIntoMarkdownBlocks(lines.slice(bodyStartIndex)).flatMap(splitLargeTableBlock);
+  const prefix = context.join("\n").trim();
+  const chunks = [];
+  let current = prefix;
+
+  bodyBlocks.forEach((block) => {
+    const nextChunk = [current, block].filter(Boolean).join("\n\n");
+    if (
+      current &&
+      current !== prefix &&
+      getContentDensityScore(nextChunk) > AUTO_SPLIT_THRESHOLD
+    ) {
+      chunks.push(current);
+      current = [prefix, block].filter(Boolean).join("\n\n");
+    } else {
+      current = nextChunk;
+    }
+  });
+
+  if (current.trim()) {
+    chunks.push(current);
+  }
+
+  return chunks.filter((item) => item.trim());
+}
+
+function splitIntoMarkdownBlocks(lines) {
+  const blocks = [];
+  let current = [];
+  let inCodeBlock = false;
+
+  function pushCurrent() {
+    const block = current.join("\n").trim();
+    if (block) {
+      blocks.push(block);
+    }
+    current = [];
+  }
+
+  lines.forEach((line) => {
+    if (CODE_FENCE_PATTERN.test(line.trim())) {
+      inCodeBlock = !inCodeBlock;
+      current.push(line);
+      if (!inCodeBlock) {
+        pushCurrent();
+      }
+      return;
+    }
+
+    if (!inCodeBlock && !line.trim()) {
+      pushCurrent();
+      return;
+    }
+    current.push(line);
+  });
+
+  pushCurrent();
+  return blocks;
+}
+
+function splitLargeTableBlock(block) {
+  const lines = block.split("\n");
+  const separatorIndex = lines.findIndex((line) => isTableSeparator(line));
+
+  if (separatorIndex <= 0 || lines.length <= separatorIndex + 5) {
+    return [block];
+  }
+
+  const header = lines.slice(0, separatorIndex + 1);
+  const rows = lines.slice(separatorIndex + 1);
+  const rowGroups = [];
+
+  for (let index = 0; index < rows.length; index += 4) {
+    rowGroups.push([...header, ...rows.slice(index, index + 4)].join("\n"));
+  }
+
+  return rowGroups;
+}
+
+function expandDenseSlide(part) {
+  const notes = parseSpeakerNotes(part);
+  const noteFree = removeSpeakerNotes(part);
+  const config = parseSlideConfig(noteFree);
+  const score = getContentDensityScore(config.content);
+
+  if (config.layout !== "default" || score <= AUTO_SPLIT_THRESHOLD) {
+    return [part];
+  }
+
+  const chunks = splitDenseContent(config.content).filter(
+    (chunk) => getContentDensityScore(chunk) > 0,
+  );
+
+  if (chunks.length <= 1) {
+    return [part];
+  }
+
+  const directives = getSlideDirectiveLines(noteFree);
+  const directivePrefix = directives.length ? `${directives.join("\n").trim()}\n\n` : "";
+
+  return chunks.map((chunk, index) => {
+    const notesBlock =
+      index === 0 && notes ? `\n\n:::notes\n${notes}\n:::` : "";
+    return `${directivePrefix}${chunk}${notesBlock}`.trim();
+  });
+}
+
 function parseMarkdownForExport(markdown) {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const blocks = [];
@@ -600,7 +810,7 @@ export function getDensityAdvice(label) {
 }
 
 export function buildSlides(markdown, globalTheme = "warm") {
-  return splitSlides(markdown).map((part, index) => {
+  return splitSlides(markdown).flatMap(expandDenseSlide).map((part, index) => {
     const notes = parseSpeakerNotes(part);
     const noteFree = removeSpeakerNotes(part);
     const config = parseSlideConfig(noteFree);
