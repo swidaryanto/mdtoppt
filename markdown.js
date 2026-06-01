@@ -452,6 +452,13 @@ function splitDenseContent(content) {
     return buffer.some((line) => line.trim());
   }
 
+  function hasBodyContent(buffer) {
+    return buffer.some((line) => {
+      const trimmed = line.trim();
+      return trimmed && !/^#{2,4}\s+/.test(trimmed);
+    });
+  }
+
   function pushCurrent() {
     const chunk = current.join("\n").trim();
     if (chunk) {
@@ -468,7 +475,7 @@ function splitDenseContent(content) {
       parentHeading = line;
     }
 
-    if (isSectionHeading && hasContent(current)) {
+    if (isSectionHeading && hasBodyContent(current)) {
       pushCurrent();
       if (/^#{3,4}\s+/.test(trimmed) && parentHeading && parentHeading !== line) {
         current.push(parentHeading, "");
@@ -510,7 +517,11 @@ function splitOversizedChunk(chunk) {
 
   bodyBlocks.forEach((block) => {
     const nextChunk = [current, block].filter(Boolean).join("\n\n");
-    if (current && getContentDensityScore(nextChunk) > AUTO_SPLIT_THRESHOLD) {
+    if (
+      current &&
+      current !== prefix &&
+      getContentDensityScore(nextChunk) > AUTO_SPLIT_THRESHOLD
+    ) {
       chunks.push(current);
       current = [prefix, block].filter(Boolean).join("\n\n");
     } else {
@@ -528,6 +539,7 @@ function splitOversizedChunk(chunk) {
 function splitIntoMarkdownBlocks(lines) {
   const blocks = [];
   let current = [];
+  let inCodeBlock = false;
 
   function pushCurrent() {
     const block = current.join("\n").trim();
@@ -538,7 +550,16 @@ function splitIntoMarkdownBlocks(lines) {
   }
 
   lines.forEach((line) => {
-    if (!line.trim()) {
+    if (CODE_FENCE_PATTERN.test(line.trim())) {
+      inCodeBlock = !inCodeBlock;
+      current.push(line);
+      if (!inCodeBlock) {
+        pushCurrent();
+      }
+      return;
+    }
+
+    if (!inCodeBlock && !line.trim()) {
       pushCurrent();
       return;
     }
