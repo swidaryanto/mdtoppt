@@ -263,6 +263,28 @@ async function renderMermaidDiagrams(container) {
   }
 }
 
+function syncActiveThumbIntoView() {
+  const activeThumb = elements.slideStrip.querySelector(".slide-thumb.active");
+  const stripWrap = elements.slideStrip.closest(".slide-strip-wrap");
+
+  if (!activeThumb || !stripWrap) {
+    return;
+  }
+
+  const thumbRect = activeThumb.getBoundingClientRect();
+  const wrapRect = stripWrap.getBoundingClientRect();
+  const scrollBuffer = 24;
+
+  if (thumbRect.right > wrapRect.right - scrollBuffer) {
+    stripWrap.scrollLeft += thumbRect.right - wrapRect.right + scrollBuffer;
+    return;
+  }
+
+  if (thumbRect.left < wrapRect.left + scrollBuffer) {
+    stripWrap.scrollLeft -= wrapRect.left - thumbRect.left + scrollBuffer;
+  }
+}
+
 function renderStrip() {
   elements.slideStrip.innerHTML = "";
 
@@ -296,6 +318,7 @@ function render() {
   syncDerivedState();
   renderStage();
   renderStrip();
+  window.requestAnimationFrame(syncActiveThumbIntoView);
   writeSessionToStorage(getSessionPayload());
   updateUrlState(state);
 }
