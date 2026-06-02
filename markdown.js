@@ -8,6 +8,7 @@ const INLINE_IMAGE_PATTERN = /!\[([^\]]*)\]\(((?:[^()\s]+|\([^)]*\))+)(?:\s+"([^
 const INLINE_IMAGE_GLOBAL_PATTERN = /!\[([^\]]*)\]\(((?:[^()\s]+|\([^)]*\))+)(?:\s+"([^"]+)")?\)/g;
 const INLINE_LINK_GLOBAL_PATTERN = /\[([^\]]+)\]\(((?:[^()\s]+|\([^)]*\))+)\)/g;
 const AUTO_SPLIT_THRESHOLD = 160;
+const ASCII_DIAGRAM_PATTERN = /[┌┐└┘├┤┬┴┼─│▼▲▶◀→←↑↓]/;
 
 export function escapeHtml(value) {
   return String(value)
@@ -148,7 +149,7 @@ function isListItem(line) {
 }
 
 function isTableSeparator(line) {
-  return /^\s*\|?(?:\s*:?-{3,}:?\s*\|)+\s*:?-{3,}:?\s*\|?\s*$/.test(line);
+  return /^\s*\|?(?:\s*:?-{2,}:?\s*\|)+\s*:?-{2,}:?\s*\|?\s*$/.test(line);
 }
 
 function splitTableRow(line, parser = parseInlineMarkdown) {
@@ -294,7 +295,7 @@ function parseMarkdownContent(markdown) {
     }
 
     if (CODE_FENCE_PATTERN.test(trimmed)) {
-      const language = trimmed.slice(3).trim();
+      const language = trimmed.slice(3).trim().toLowerCase();
       const codeBuffer = [];
       index += 1;
 
@@ -307,8 +308,16 @@ function parseMarkdownContent(markdown) {
         index += 1;
       }
 
+      const code = codeBuffer.join("\n");
+
+      if (language === "mermaid") {
+        html.push(`<div class="mermaid">${escapeHtml(code)}</div>`);
+        continue;
+      }
+
+      const preClass = ASCII_DIAGRAM_PATTERN.test(code) ? ' class="diagram-code"' : "";
       const languageClass = language ? ` class="language-${escapeAttribute(language)}"` : "";
-      html.push(`<pre><code${languageClass}>${escapeHtml(codeBuffer.join("\n"))}</code></pre>`);
+      html.push(`<pre${preClass}><code${languageClass}>${escapeHtml(code)}</code></pre>`);
       continue;
     }
 

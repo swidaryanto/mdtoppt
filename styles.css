@@ -529,12 +529,13 @@ a {
 .slide-stage {
     width: min(100%, 960px);
     aspect-ratio: 16 / 9;
+    container-type: inline-size;
     border-radius: var(--radius-xl);
     background: var(--stage-bg), var(--panel);
     color: var(--stage-ink);
     border: 1px solid rgba(34, 31, 26, 0.06);
     box-shadow: var(--shadow-lg);
-    padding: clamp(1.4rem, 3vw, 3rem);
+    padding: clamp(1.4rem, 4cqw, 4.75rem);
     overflow: hidden;
 }
 
@@ -823,24 +824,24 @@ a {
 }
 
 .slide h1 {
-    font-size: 3rem;
+    font-size: clamp(2.25rem, 3.35cqw, 4.2rem);
 }
 .slide h2 {
-    font-size: 2rem;
+    font-size: clamp(1.6rem, 2.25cqw, 2.85rem);
 }
 .slide h3 {
-    font-size: 1.4rem;
+    font-size: clamp(1.1rem, 1.58cqw, 2rem);
 }
 .slide h4,
 .slide h5,
 .slide h6 {
-    font-size: 1.05rem;
+    font-size: clamp(0.95rem, 1.18cqw, 1.5rem);
 }
 
 .slide p,
 .slide li,
 .slide blockquote {
-    font-size: 1rem;
+    font-size: clamp(0.9rem, 1.14cqw, 1.44rem);
     line-height: 1.4;
 }
 
@@ -856,7 +857,8 @@ a {
 
 .slide ul,
 .slide ol {
-    padding-left: 1.15em;
+    list-style-position: outside;
+    padding-left: clamp(1.65rem, 2.6cqw, 3.4rem);
 }
 
 .slide li + li {
@@ -866,13 +868,83 @@ a {
 .slide pre {
     flex-shrink: 0;
     max-height: 42%;
-    padding: 0.75rem 0.9rem;
+    padding: clamp(0.65rem, 0.88cqw, 1.1rem) clamp(0.75rem, 1cqw, 1.3rem);
     border-radius: var(--radius-sm);
     background: rgba(26, 23, 20, 0.96);
     color: #f8efe5;
     overflow: auto;
-    font-size: 0.84rem;
+    font-size: clamp(0.75rem, 0.94cqw, 1.2rem);
     line-height: 1.45;
+}
+
+.slide pre.diagram-code {
+    align-self: center;
+    width: max-content;
+    max-width: 100%;
+    max-height: 82%;
+    flex: 0 1 auto;
+    font-size: clamp(0.62rem, 0.86cqw, 1.08rem);
+    line-height: 1.08;
+    white-space: pre;
+}
+
+.slide .mermaid {
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 78%;
+    padding: clamp(0.75rem, 1.15cqw, 1.45rem);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 253, 248, 0.72);
+    border: 1px solid rgba(34, 31, 26, 0.08);
+    overflow: auto;
+}
+
+.slide .mermaid svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+}
+
+.slide .mermaid-fallback {
+    font-family: var(--font-mono);
+    white-space: pre;
+    color: var(--stage-muted);
+}
+
+.slide:has(pre, .mermaid) {
+    gap: clamp(0.16rem, 0.38cqw, 0.48rem);
+}
+
+.slide:has(pre, .mermaid) h2,
+.slide:has(pre, .mermaid) h3 {
+    margin-bottom: clamp(0.14rem, 0.32cqw, 0.4rem);
+}
+
+.slide:has(pre, .mermaid) p {
+    margin-top: clamp(0.18rem, 0.36cqw, 0.45rem);
+}
+
+.slide:has(pre, .mermaid) table {
+    margin-top: clamp(0.28rem, 0.5cqw, 0.62rem);
+}
+
+.slide:has(pre, .mermaid) pre:not(.diagram-code) {
+    max-height: 24%;
+}
+
+.slide:has(pre):has(table) pre:not(.diagram-code) {
+    max-height: 16%;
+}
+
+.slide:has(pre):has(table) table {
+    font-size: clamp(0.68rem, 0.82cqw, 1rem);
+}
+
+.slide:has(pre, .mermaid) .mermaid + p,
+.slide:has(pre, .mermaid) pre + p {
+    margin-top: clamp(0.22rem, 0.44cqw, 0.55rem);
 }
 
 .slide blockquote {
@@ -895,7 +967,7 @@ a {
     overflow: hidden;
     border-radius: 10px;
     border: 1px solid rgba(34, 31, 26, 0.1);
-    font-size: 0.9rem;
+    font-size: clamp(0.78rem, 1.02cqw, 1.3rem);
 }
 
 .slide th,
@@ -954,29 +1026,36 @@ a {
 }
 
 .slide[data-density="busy"] h1 {
-    font-size: 2.5rem;
+    font-size: clamp(1.95rem, 2.82cqw, 3.55rem);
 }
 
 .slide[data-density="busy"] h2 {
-    font-size: 1.7rem;
+    font-size: clamp(1.35rem, 1.92cqw, 2.4rem);
 }
 
 .slide[data-density="busy"] h3 {
-    font-size: 1.18rem;
+    font-size: clamp(1rem, 1.34cqw, 1.7rem);
 }
 
 .slide[data-density="busy"] p,
 .slide[data-density="busy"] li,
 .slide[data-density="busy"] blockquote {
-    font-size: 0.88rem;
+    font-size: clamp(0.78rem, 1cqw, 1.25rem);
     line-height: 1.32;
 }
 
 .slide[data-density="busy"] pre {
     max-height: 34%;
-    padding: 0.58rem 0.7rem;
-    font-size: 0.72rem;
+    padding: clamp(0.48rem, 0.66cqw, 0.82rem) clamp(0.58rem, 0.78cqw, 1rem);
+    font-size: clamp(0.64rem, 0.82cqw, 1.02rem);
     line-height: 1.34;
+}
+
+.slide[data-density="busy"] pre.diagram-code {
+    max-height: 82%;
+    flex: 0 1 auto;
+    font-size: clamp(0.56rem, 0.78cqw, 0.98rem);
+    line-height: 1.08;
 }
 
 .slide[data-density="busy"] th,
@@ -989,27 +1068,27 @@ a {
 }
 
 .slide[data-density="crowded"] h1 {
-    font-size: 2.15rem;
+    font-size: clamp(1.7rem, 2.42cqw, 3.05rem);
 }
 
 .slide[data-density="crowded"] h2 {
-    font-size: 1.45rem;
+    font-size: clamp(1.15rem, 1.64cqw, 2.05rem);
 }
 
 .slide[data-density="crowded"] h3 {
-    font-size: 1.02rem;
+    font-size: clamp(0.88rem, 1.16cqw, 1.45rem);
 }
 
 .slide[data-density="crowded"] h4,
 .slide[data-density="crowded"] h5,
 .slide[data-density="crowded"] h6 {
-    font-size: 0.88rem;
+    font-size: clamp(0.78rem, 1cqw, 1.25rem);
 }
 
 .slide[data-density="crowded"] p,
 .slide[data-density="crowded"] li,
 .slide[data-density="crowded"] blockquote {
-    font-size: 0.76rem;
+    font-size: clamp(0.68rem, 0.86cqw, 1.08rem);
     line-height: 1.24;
 }
 
@@ -1028,9 +1107,16 @@ a {
 
 .slide[data-density="crowded"] pre {
     max-height: 30%;
-    padding: 0.45rem 0.58rem;
-    font-size: 0.62rem;
+    padding: clamp(0.38rem, 0.52cqw, 0.65rem) clamp(0.48rem, 0.66cqw, 0.82rem);
+    font-size: clamp(0.56rem, 0.7cqw, 0.88rem);
     line-height: 1.25;
+}
+
+.slide[data-density="crowded"] pre.diagram-code {
+    max-height: 82%;
+    flex: 0 1 auto;
+    font-size: clamp(0.5rem, 0.68cqw, 0.86rem);
+    line-height: 1.08;
 }
 
 .slide[data-density="crowded"] code {
@@ -1053,13 +1139,13 @@ a {
 .slide-layout-title h1:first-child,
 .slide-layout-title h2:first-child {
     max-width: 14ch;
-    font-size: 3.65rem;
+    font-size: clamp(2.8rem, 4.12cqw, 5.2rem);
     line-height: 0.98;
 }
 
 .slide-layout-title p {
     max-width: 44ch;
-    font-size: 1.05rem;
+    font-size: clamp(0.95rem, 1.18cqw, 1.5rem);
     line-height: 1.28;
     color: var(--stage-muted);
 }
@@ -1068,13 +1154,13 @@ a {
 .slide-layout-title[data-density="busy"] h2:first-child,
 .slide-layout-title[data-density="crowded"] h1:first-child,
 .slide-layout-title[data-density="crowded"] h2:first-child {
-    font-size: 3rem;
+    font-size: clamp(2.25rem, 3.35cqw, 4.2rem);
     max-width: 18ch;
 }
 
 .slide-layout-title[data-density="busy"] p,
 .slide-layout-title[data-density="crowded"] p {
-    font-size: 0.92rem;
+    font-size: clamp(0.82rem, 1.04cqw, 1.3rem);
 }
 
 .slide-columns {
@@ -1250,6 +1336,79 @@ body.presenting .slide-stage {
     height: auto;
     max-height: calc(100vh - 3rem);
     aspect-ratio: 16 / 9;
+}
+
+body.presenting .slide h1 {
+    font-size: clamp(2.5rem, 3.85cqw, 4.8rem);
+}
+
+body.presenting .slide h2 {
+    font-size: clamp(1.8rem, 2.58cqw, 3.25rem);
+}
+
+body.presenting .slide h3 {
+    font-size: clamp(1.25rem, 1.82cqw, 2.3rem);
+}
+
+body.presenting .slide p,
+body.presenting .slide li,
+body.presenting .slide blockquote {
+    font-size: clamp(1rem, 1.32cqw, 1.65rem);
+}
+
+body.presenting .slide[data-density="busy"] h1 {
+    font-size: clamp(2.2rem, 3.24cqw, 4rem);
+}
+
+body.presenting .slide[data-density="busy"] h2 {
+    font-size: clamp(1.55rem, 2.18cqw, 2.7rem);
+}
+
+body.presenting .slide[data-density="busy"] h3 {
+    font-size: clamp(1.12rem, 1.54cqw, 1.9rem);
+}
+
+body.presenting .slide[data-density="busy"] p,
+body.presenting .slide[data-density="busy"] li,
+body.presenting .slide[data-density="busy"] blockquote {
+    font-size: clamp(0.9rem, 1.18cqw, 1.42rem);
+}
+
+body.presenting .slide pre {
+    max-height: 48%;
+    font-size: clamp(0.95rem, 1.18cqw, 1.45rem);
+    line-height: 1.38;
+}
+
+body.presenting .slide[data-density="busy"] pre {
+    max-height: 42%;
+    font-size: clamp(0.82rem, 1.05cqw, 1.28rem);
+    line-height: 1.28;
+}
+
+body.presenting .slide[data-density="crowded"] pre {
+    max-height: 38%;
+    font-size: clamp(0.72rem, 0.92cqw, 1.12rem);
+}
+
+body.presenting .slide pre.diagram-code {
+    max-height: 82%;
+    font-size: clamp(0.9rem, 1.15cqw, 1.38rem);
+    line-height: 1.08;
+}
+
+body.presenting .slide[data-density="busy"] pre.diagram-code {
+    max-height: 82%;
+    font-size: clamp(0.78rem, 1.02cqw, 1.22rem);
+}
+
+body.presenting .slide[data-density="crowded"] pre.diagram-code {
+    max-height: 82%;
+    font-size: clamp(0.68rem, 0.9cqw, 1.08rem);
+}
+
+body.presenting .slide:has(pre):has(table) table {
+    font-size: clamp(0.76rem, 0.96cqw, 1.16rem);
 }
 
 body.presenting .slide-strip-wrap {

@@ -3,7 +3,7 @@ import {
   buildSlides,
   escapeAttribute,
   parseInlineMarkdown,
-} from "./markdown.js?v=fit-2";
+} from "./markdown.js?v=fit-7";
 import { exportDeckAsPptx } from "./pptx-export.js";
 import {
   buildSessionPayload,
@@ -212,6 +212,7 @@ function renderStage() {
   const slide = state.slides[state.currentIndex];
   elements.slideStage.dataset.theme = slide.theme;
   elements.slideStage.innerHTML = `<div class="slide slide-layout-${slide.layout}" data-density="${slide.densityLabel}">${slide.markup}</div>`;
+  renderMermaidDiagrams(elements.slideStage);
 
   // Badges
   elements.slideCount.textContent = `${state.slides.length} ${state.slides.length === 1 ? "slide" : "slides"}`;
@@ -230,6 +231,36 @@ function renderStage() {
   updateSpeakerNotes(slide);
   elements.prevButton.disabled = state.currentIndex === 0;
   elements.nextButton.disabled = state.currentIndex === state.slides.length - 1;
+}
+
+async function renderMermaidDiagrams(container) {
+  const diagrams = container.querySelectorAll(".mermaid");
+  if (!diagrams.length) {
+    return;
+  }
+
+  try {
+    const mermaid = await import("https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs");
+    mermaid.default.initialize({
+      startOnLoad: false,
+      securityLevel: "strict",
+      theme: "base",
+      themeVariables: {
+        fontFamily: "Instrument Sans, sans-serif",
+        primaryColor: "#fffdf8",
+        primaryTextColor: "#221f1a",
+        primaryBorderColor: "#d7643b",
+        lineColor: "#8a8279",
+        secondaryColor: "#f3efe7",
+        tertiaryColor: "#ffffff",
+      },
+    });
+    await mermaid.default.run({ nodes: diagrams });
+  } catch {
+    diagrams.forEach((diagram) => {
+      diagram.classList.add("mermaid-fallback");
+    });
+  }
 }
 
 function renderStrip() {
