@@ -1339,39 +1339,47 @@ body.presenting .slide-stage {
 }
 
 body.presenting .slide h1 {
-    font-size: clamp(2.5rem, 3.85cqw, 4.8rem);
+    font-size: clamp(2.9rem, 4.55cqw, 5.6rem);
 }
 
 body.presenting .slide h2 {
-    font-size: clamp(1.8rem, 2.58cqw, 3.25rem);
+    font-size: clamp(2.1rem, 3.35cqw, 4.15rem);
 }
 
 body.presenting .slide h3 {
-    font-size: clamp(1.25rem, 1.82cqw, 2.3rem);
+    font-size: clamp(1.42rem, 2.2cqw, 2.75rem);
 }
 
 body.presenting .slide p,
 body.presenting .slide li,
 body.presenting .slide blockquote {
-    font-size: clamp(1rem, 1.32cqw, 1.65rem);
+    font-size: clamp(1.12rem, 1.72cqw, 2.05rem);
+}
+
+body.presenting .slide table {
+    font-size: clamp(1.02rem, 1.6cqw, 1.88rem);
 }
 
 body.presenting .slide[data-density="busy"] h1 {
-    font-size: clamp(2.2rem, 3.24cqw, 4rem);
+    font-size: clamp(2.65rem, 4.35cqw, 5.35rem);
 }
 
 body.presenting .slide[data-density="busy"] h2 {
-    font-size: clamp(1.55rem, 2.18cqw, 2.7rem);
+    font-size: clamp(2.05rem, 3.65cqw, 4.35rem);
 }
 
 body.presenting .slide[data-density="busy"] h3 {
-    font-size: clamp(1.12rem, 1.54cqw, 1.9rem);
+    font-size: clamp(1.38rem, 2.18cqw, 2.7rem);
 }
 
 body.presenting .slide[data-density="busy"] p,
 body.presenting .slide[data-density="busy"] li,
 body.presenting .slide[data-density="busy"] blockquote {
-    font-size: clamp(0.9rem, 1.18cqw, 1.42rem);
+    font-size: clamp(1.08rem, 1.72cqw, 2.02rem);
+}
+
+body.presenting .slide[data-density="busy"] table {
+    font-size: clamp(0.98rem, 1.58cqw, 1.82rem);
 }
 
 body.presenting .slide pre {
