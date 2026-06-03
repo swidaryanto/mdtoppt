@@ -3,7 +3,7 @@ import {
   buildSlides,
   escapeAttribute,
   parseInlineMarkdown,
-} from "./markdown.js?v=fit-10";
+} from "./markdown.js?v=fit-16";
 import { exportDeckAsPptx } from "./pptx-export.js";
 import {
   buildSessionPayload,
@@ -59,12 +59,15 @@ const state = {
 /* ── Theme Select ─────────────────────────────────────────────── */
 
 function populateThemeSelect() {
-  elements.themeMenu.innerHTML = Object.entries(THEME_OPTIONS)
+  const themeButtons = Object.entries(THEME_OPTIONS)
+    .sort(([, a], [, b]) => a.label.localeCompare(b.label))
     .map(
       ([value, theme]) =>
         `<button class="dropdown-item" type="button" data-theme="${escapeAttribute(value)}">${theme.label}</button>`,
     )
     .join("");
+
+  elements.themeMenu.innerHTML = `<div class="dropdown-section-title">Theme</div>${themeButtons}`;
 
   elements.themeMenu.addEventListener("click", (event) => {
     const item = event.target.closest("[data-theme]");

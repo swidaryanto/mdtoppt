@@ -3,22 +3,26 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>MD to PPT</title>
+        <title>.MDPPT</title>
+        <link rel="icon" type="image/svg+xml" href="./logo.svg" />
+        <link rel="apple-touch-icon" href="./logo.svg" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
             href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
             rel="stylesheet"
         />
-        <link rel="stylesheet" href="./styles.css?v=fit-10" />
+        <link rel="stylesheet" href="./styles.css?v=fit-16" />
     </head>
     <body>
         <div class="app-shell">
             <!-- ── Top Bar ────────────────────────────────────────────── -->
             <header class="top-bar">
                 <div class="top-bar-brand">
-                    <span class="brand-mark">M</span>
-                    <span class="brand-text">MD to PPT</span>
+                    <span class="brand-mark" aria-hidden="true">
+                        <img src="./logo.svg" alt="" />
+                    </span>
+                    <span class="brand-text">.MDPPT</span>
                 </div>
 
                 <nav class="top-bar-actions">
@@ -205,7 +209,7 @@
                     </button>
 
                     <!-- Export dropdown -->
-                    <div class="dropdown" data-dropdown>
+                    <div class="dropdown dropdown-align-end" data-dropdown>
                         <button
                             class="btn btn-ghost dropdown-trigger"
                             data-dropdown-trigger
@@ -518,6 +522,6 @@
         </template>
 
         <script src="https://unpkg.com/pptxgenjs/dist/pptxgen.bundle.js"></script>
-        <script type="module" src="./app.js?v=fit-10"></script>
+        <script type="module" src="./app.js?v=fit-16"></script>
     </body>
 </html>
