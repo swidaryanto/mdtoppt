@@ -3,7 +3,7 @@ import {
   buildSlides,
   escapeAttribute,
   parseInlineMarkdown,
-} from "./markdown.js?v=fit-16";
+} from "./markdown.js?v=fit-19";
 import { exportDeckAsPptx } from "./pptx-export.js";
 import {
   buildSessionPayload,
@@ -33,10 +33,7 @@ const elements = {
   printButton: document.querySelector("#print-deck"),
   slideStage: document.querySelector("#slide-stage"),
   slideStrip: document.querySelector("#slide-strip"),
-  slideCount: document.querySelector("#slide-count"),
   slidePosition: document.querySelector("#slide-position"),
-  slideLayout: document.querySelector("#slide-layout"),
-  slideDensity: document.querySelector("#slide-density"),
   speakerNotes: document.querySelector("#speaker-notes"),
   notesToggle: document.querySelector("#notes-toggle"),
   helpToggle: document.querySelector("#toggle-help"),
@@ -196,10 +193,7 @@ function updateSpeakerNotes(slide) {
 
 function renderEmptyStage() {
   elements.slideStage.innerHTML = getOnboardingMarkup();
-  elements.slideCount.textContent = "0 slides";
   elements.slidePosition.textContent = "0 / 0";
-  elements.slideLayout.textContent = "default";
-  elements.slideDensity.hidden = true;
   elements.slideStage.dataset.theme = state.globalTheme;
   updateSpeakerNotes(null);
   elements.prevButton.disabled = true;
@@ -217,19 +211,7 @@ function renderStage() {
   elements.slideStage.innerHTML = `<div class="slide slide-layout-${slide.layout}" data-density="${slide.densityLabel}">${slide.markup}</div>`;
   renderMermaidDiagrams(elements.slideStage);
 
-  // Badges
-  elements.slideCount.textContent = `${state.slides.length} ${state.slides.length === 1 ? "slide" : "slides"}`;
   elements.slidePosition.textContent = `${state.currentIndex + 1} / ${state.slides.length}`;
-  elements.slideLayout.textContent = slide.layout;
-
-  // Density badge — only show when not "balanced"
-  if (slide.densityLabel === "balanced") {
-    elements.slideDensity.hidden = true;
-  } else {
-    elements.slideDensity.hidden = false;
-    elements.slideDensity.textContent = slide.densityLabel;
-    elements.slideDensity.dataset.state = slide.densityLabel;
-  }
 
   updateSpeakerNotes(slide);
   elements.prevButton.disabled = state.currentIndex === 0;
@@ -491,8 +473,11 @@ function bindExportEvents() {
   });
 
   elements.printButton.addEventListener("click", () => {
-    const currentMarkup = elements.slideStage.innerHTML;
-    const currentTheme = elements.slideStage.dataset.theme;
+    if (!state.slides.length) {
+      showToast(elements.printButton, "No slides");
+      return;
+    }
+
     const printMarkup = state.slides
       .map(
         (slide) => `
@@ -504,10 +489,20 @@ function bindExportEvents() {
       )
       .join("");
 
-    elements.slideStage.innerHTML = `${currentMarkup}<section class="print-deck">${printMarkup}</section>`;
+    const printDeck = document.createElement("section");
+    printDeck.className = "print-deck";
+    printDeck.innerHTML = printMarkup;
+
+    const cleanupPrintDeck = () => {
+      printDeck.remove();
+      document.body.classList.remove("printing-deck");
+      window.removeEventListener("afterprint", cleanupPrintDeck);
+    };
+
+    document.body.append(printDeck);
+    document.body.classList.add("printing-deck");
+    window.addEventListener("afterprint", cleanupPrintDeck);
     window.print();
-    elements.slideStage.dataset.theme = currentTheme;
-    elements.slideStage.innerHTML = currentMarkup;
   });
 }
 

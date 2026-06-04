@@ -12,7 +12,7 @@
             href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
             rel="stylesheet"
         />
-        <link rel="stylesheet" href="./styles.css?v=fit-16" />
+        <link rel="stylesheet" href="./styles.css?v=fit-19" />
     </head>
     <body>
         <div class="app-shell">
@@ -76,7 +76,7 @@
                                         d="M3 14v3a1 1 0 001 1h12a1 1 0 001-1v-3M10 3v10M6 9l4 4 4-4"
                                     />
                                 </svg>
-                                Upload to <code>.md</code>
+                                Upload <code>.md</code>
                             </label>
                             <input
                                 id="markdown-file"
@@ -104,42 +104,6 @@
                             />
                             <button
                                 class="dropdown-item"
-                                id="load-sample"
-                                type="button"
-                            >
-                                <svg
-                                    class="icon"
-                                    viewBox="0 0 20 20"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.5"
-                                >
-                                    <path d="M4 4h12v12H4z" />
-                                    <path d="M8 8h4v4H8z" />
-                                </svg>
-                                Load sample
-                            </button>
-                            <div class="dropdown-divider"></div>
-                            <button
-                                class="dropdown-item"
-                                id="export-markdown"
-                                type="button"
-                            >
-                                <svg
-                                    class="icon"
-                                    viewBox="0 0 20 20"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.5"
-                                >
-                                    <path
-                                        d="M3 14v3a1 1 0 001 1h12a1 1 0 001-1v-3M10 3v10M6 9l4 4 4-4"
-                                    />
-                                </svg>
-                                Export to <code>.md</code>
-                            </button>
-                            <button
-                                class="dropdown-item"
                                 id="export-session"
                                 type="button"
                             >
@@ -160,6 +124,23 @@
                                     <path d="M7 7h6M7 10h6M7 13h3" />
                                 </svg>
                                 Export session
+                            </button>
+                            <button
+                                class="dropdown-item"
+                                id="load-sample"
+                                type="button"
+                            >
+                                <svg
+                                    class="icon"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                >
+                                    <path d="M4 4h12v12H4z" />
+                                    <path d="M8 8h4v4H8z" />
+                                </svg>
+                                Load sample
                             </button>
                         </div>
                     </div>
@@ -250,6 +231,24 @@
                             </svg>
                         </button>
                         <div class="dropdown-menu" data-dropdown-menu>
+                            <button
+                                class="dropdown-item"
+                                id="export-markdown"
+                                type="button"
+                            >
+                                <svg
+                                    class="icon"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                >
+                                    <path
+                                        d="M3 14v3a1 1 0 001 1h12a1 1 0 001-1v-3M10 3v10M6 9l4 4 4-4"
+                                    />
+                                </svg>
+                                Export <code>.md</code>
+                            </button>
                             <button
                                 class="dropdown-item"
                                 id="export-pptx"
@@ -400,68 +399,60 @@
 
                 <!-- Presentation Panel -->
                 <main class="presentation-panel">
-                    <!-- Slide Preview -->
-                    <section class="stage-wrap">
-                        <article
-                            id="slide-stage"
-                            class="slide-stage"
-                            aria-live="polite"
-                        ></article>
+                    <section class="preview-stack">
+                        <!-- Slide Preview -->
+                        <section class="stage-wrap">
+                            <article
+                                id="slide-stage"
+                                class="slide-stage"
+                                aria-live="polite"
+                            ></article>
+                        </section>
+
+                        <!-- Inline Navigation -->
+                        <div class="slide-nav">
+                            <button
+                                class="btn btn-nav"
+                                id="prev-slide"
+                                type="button"
+                                disabled
+                            >
+                                <svg
+                                    class="icon"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path d="M12 4l-6 6 6 6" />
+                                </svg>
+                            </button>
+                            <span class="slide-counter" id="slide-position"
+                                >0 / 0</span
+                            >
+                            <button
+                                class="btn btn-nav"
+                                id="next-slide"
+                                type="button"
+                                disabled
+                            >
+                                <svg
+                                    class="icon"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path d="M8 4l6 6-6 6" />
+                                </svg>
+                            </button>
+                        </div>
+
                     </section>
-
-                    <!-- Inline Navigation -->
-                    <div class="slide-nav">
-                        <button
-                            class="btn btn-nav"
-                            id="prev-slide"
-                            type="button"
-                            disabled
-                        >
-                            <svg
-                                class="icon"
-                                viewBox="0 0 20 20"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <path d="M12 4l-6 6 6 6" />
-                            </svg>
-                        </button>
-                        <span class="slide-counter" id="slide-position"
-                            >0 / 0</span
-                        >
-                        <button
-                            class="btn btn-nav"
-                            id="next-slide"
-                            type="button"
-                            disabled
-                        >
-                            <svg
-                                class="icon"
-                                viewBox="0 0 20 20"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <path d="M8 4l6 6-6 6" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- Slide Metadata Badges -->
-                    <div class="slide-badges">
-                        <span class="badge" id="slide-count">0 slides</span>
-                        <span class="badge" id="slide-layout">default</span>
-                        <span
-                            class="badge badge-warning"
-                            id="slide-density"
-                            hidden
-                        ></span>
-                    </div>
 
                     <!-- Speaker Notes (collapsible) -->
                     <section class="speaker-notes-section">
@@ -522,6 +513,6 @@
         </template>
 
         <script src="https://unpkg.com/pptxgenjs/dist/pptxgen.bundle.js"></script>
-        <script type="module" src="./app.js?v=fit-16"></script>
+        <script type="module" src="./app.js?v=fit-19"></script>
     </body>
 </html>
