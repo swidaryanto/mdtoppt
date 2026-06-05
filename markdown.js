@@ -1,4 +1,4 @@
-import { LAYOUT_OPTIONS, THEME_OPTIONS } from "./config.js";
+import { LAYOUT_OPTIONS, THEME_OPTIONS } from "./config.js?v=fit-22";
 
 const HEADING_PATTERN = /^#{1,6}\s/;
 const BLOCKQUOTE_PATTERN = /^>\s?/;

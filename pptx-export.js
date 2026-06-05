@@ -1,4 +1,4 @@
-import { PPTX_CDN, THEME_OPTIONS } from "./config.js";
+import { PPTX_CDN, THEME_OPTIONS } from "./config.js?v=fit-22";
 
 function getThemeTokens(themeName) {
   return THEME_OPTIONS[themeName] || THEME_OPTIONS.warm;

@@ -24,7 +24,7 @@ layout: two-column
 ## Conventions
 
 - Use \`layout: two-column\` or \`layout: quote\`
-- Add \`theme: graphite\` per slide when needed
+- Add \`theme: hypepedia\` per slide when needed
 - Write speaker notes in a \`:::notes\` block
 
 :::notes
@@ -34,7 +34,7 @@ Point out that layouts are opt-in. A plain slide still works.
 ---
 
 layout: quote
-theme: graphite
+theme: hypepedia
 
 > Good slides remove friction.
 > They make the point easy to see.
@@ -43,15 +43,12 @@ Septian Widaryanto
 
 ---
 
-layout: image-left
-theme: spruce
+theme: hypepedia
 
 ## Visual support
 
-![Presentation workspace](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80)
-
-- Put the image anywhere in the slide
-- The image-left layout pulls it into a visual column
+- Keep the same Hypepedia background treatment
+- Use dark green text for better contrast
 - Notes stay out of the exported slide
 
 ---
@@ -88,13 +85,13 @@ export const THEME_OPTIONS = {
     muted: "6F665A",
     accent: "D7643B",
   },
-  graphite: {
-    label: "Graphite",
-    background: "171C24",
-    surface: "242B36",
-    text: "F4F7FB",
-    muted: "B8C4D3",
-    accent: "8FC7FF",
+  hypepedia: {
+    label: "Hypepedia",
+    background: "D6F1EB",
+    surface: "FFFFFF",
+    text: "1F473D",
+    muted: "47776B",
+    accent: "8ECEBE",
   },
   spruce: {
     label: "Spruce",
