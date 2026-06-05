@@ -49,7 +49,7 @@
 
     /* Typography */
     --font-sans:
-        "Instrument Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+        "Figtree", -apple-system, BlinkMacSystemFont, sans-serif;
     --font-mono: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 }
 
@@ -371,6 +371,31 @@ a {
     color: var(--ink);
 }
 
+.theme-item-label {
+    flex: 1;
+}
+
+.theme-check {
+    width: 0.95rem;
+    height: 0.95rem;
+    margin-left: auto;
+    color: var(--accent);
+    opacity: 0;
+    transform: scale(0.86);
+    transition:
+        opacity 120ms ease,
+        transform 120ms ease;
+}
+
+.theme-item[aria-current="true"] {
+    color: var(--ink);
+}
+
+.theme-item[aria-current="true"] .theme-check {
+    opacity: 1;
+    transform: scale(1);
+}
+
 .dropdown-item code {
     font-size: 0.78em;
     padding: 0.05em 0.35em;
@@ -570,17 +595,6 @@ a {
 }
 
 /* Theme variants for stage */
-.slide-stage[data-theme="graphite"] {
-    --stage-bg: linear-gradient(
-        150deg,
-        rgba(20, 24, 31, 0.98),
-        rgba(36, 41, 49, 0.94)
-    );
-    --stage-ink: #f4f7fb;
-    --stage-muted: rgba(244, 247, 251, 0.72);
-    --stage-accent: #8fc7ff;
-}
-
 .slide-stage[data-theme="spruce"] {
     --stage-bg: linear-gradient(
         145deg,
@@ -590,6 +604,14 @@ a {
     --stage-ink: #1d372b;
     --stage-muted: #557061;
     --stage-accent: #2f8d61;
+}
+
+.slide-stage[data-theme="hypepedia"] {
+    --stage-bg: linear-gradient(145deg, #d5fff6 0%, #d6f1eb 100%);
+    --stage-ink: #1f473d;
+    --stage-muted: #47776b;
+    --stage-accent: #8ecebe;
+    font-family: "Sora", var(--font-sans);
 }
 
 .slide-stage[data-theme="cobalt"] {
@@ -738,21 +760,17 @@ a {
     box-shadow: 0 0 0 2px var(--accent-softer);
 }
 
-.slide-thumb[data-theme="graphite"] {
-    background: linear-gradient(
-        160deg,
-        rgba(22, 27, 34, 0.96),
-        rgba(45, 52, 60, 0.88)
-    );
-    color: #f4f7fb;
-}
-
 .slide-thumb[data-theme="spruce"] {
     background: linear-gradient(
         160deg,
         rgba(225, 241, 232, 0.96),
         rgba(203, 228, 214, 0.92)
     );
+}
+
+.slide-thumb[data-theme="hypepedia"] {
+    background: linear-gradient(160deg, #d5fff6 0%, #d6f1eb 100%);
+    color: #1f473d;
 }
 
 .slide-thumb[data-theme="cobalt"] {
@@ -1008,6 +1026,30 @@ a {
 
 .slide code {
     font-size: 0.9em;
+}
+
+.slide-stage[data-theme="hypepedia"] .slide pre {
+    background: rgba(31, 71, 61, 0.08);
+    color: var(--stage-ink);
+    border: 1px solid rgba(31, 71, 61, 0.12);
+}
+
+.slide-stage[data-theme="hypepedia"] .slide code {
+    background: rgba(31, 71, 61, 0.08);
+    color: var(--stage-ink);
+}
+
+.slide-stage[data-theme="hypepedia"] .slide table {
+    border-color: rgba(31, 71, 61, 0.14);
+}
+
+.slide-stage[data-theme="hypepedia"] .slide th {
+    background: rgba(31, 71, 61, 0.08);
+}
+
+.slide-stage[data-theme="hypepedia"] .slide th,
+.slide-stage[data-theme="hypepedia"] .slide td {
+    border-bottom-color: rgba(31, 71, 61, 0.12);
 }
 
 .inline-image-fallback {
@@ -1634,17 +1676,6 @@ body.presenting .slide-nav .btn-nav:hover:not(:disabled) {
         font-size: clamp(0.76rem, 0.96cqw, 1.16rem);
     }
 
-    .print-slide[data-theme="graphite"] {
-        --stage-bg: linear-gradient(
-            150deg,
-            rgba(20, 24, 31, 0.98),
-            rgba(36, 41, 49, 0.94)
-        );
-        --stage-ink: #f4f7fb;
-        --stage-muted: rgba(244, 247, 251, 0.72);
-        --stage-accent: #8fc7ff;
-    }
-
     .print-slide[data-theme="spruce"] {
         --stage-bg: linear-gradient(
             145deg,
@@ -1654,6 +1685,14 @@ body.presenting .slide-nav .btn-nav:hover:not(:disabled) {
         --stage-ink: #1d372b;
         --stage-muted: #557061;
         --stage-accent: #2f8d61;
+    }
+
+    .print-slide[data-theme="hypepedia"] {
+        --stage-bg: linear-gradient(145deg, #d5fff6 0%, #d6f1eb 100%);
+        --stage-ink: #1f473d;
+        --stage-muted: #47776b;
+        --stage-accent: #8ecebe;
+        font-family: "Sora", var(--font-sans);
     }
 
     .print-slide[data-theme="cobalt"] {

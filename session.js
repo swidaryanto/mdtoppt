@@ -1,4 +1,4 @@
-import { SESSION_VERSION, STORAGE_KEY, THEME_OPTIONS } from "./config.js";
+import { SESSION_VERSION, STORAGE_KEY, THEME_OPTIONS } from "./config.js?v=fit-22";
 
 export function buildSessionPayload({ markdown, globalTheme, currentIndex }) {
   return {

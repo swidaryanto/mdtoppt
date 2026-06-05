@@ -1,10 +1,10 @@
-import { sampleMarkdown, THEME_OPTIONS } from "./config.js";
+import { sampleMarkdown, THEME_OPTIONS } from "./config.js?v=fit-22";
 import {
   buildSlides,
   escapeAttribute,
   parseInlineMarkdown,
-} from "./markdown.js?v=fit-19";
-import { exportDeckAsPptx } from "./pptx-export.js";
+} from "./markdown.js?v=fit-22";
+import { exportDeckAsPptx } from "./pptx-export.js?v=fit-22";
 import {
   buildSessionPayload,
   createDownload,
@@ -13,7 +13,7 @@ import {
   slugify,
   updateUrlState,
   writeSessionToStorage,
-} from "./session.js";
+} from "./session.js?v=fit-22";
 
 /* ── Element References ───────────────────────────────────────── */
 
@@ -60,35 +60,57 @@ function populateThemeSelect() {
     .sort(([, a], [, b]) => a.label.localeCompare(b.label))
     .map(
       ([value, theme]) =>
-        `<button class="dropdown-item" type="button" data-theme="${escapeAttribute(value)}">${theme.label}</button>`,
+        `<button class="dropdown-item theme-item" type="button" data-theme="${escapeAttribute(value)}">
+          <span class="theme-item-label">${theme.label}</span>
+          <svg class="theme-check" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M13.3 4.2 6.4 11 2.7 7.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>`,
     )
     .join("");
 
   elements.themeMenu.innerHTML = `<div class="dropdown-section-title">Theme</div>${themeButtons}`;
+  syncThemeSelect();
 
   elements.themeMenu.addEventListener("click", (event) => {
     const item = event.target.closest("[data-theme]");
     if (!item) return;
     state.globalTheme = item.dataset.theme;
-    elements.themeLabel.textContent = THEME_OPTIONS[state.globalTheme].label;
+    syncThemeSelect();
     elements.themeMenu.closest("[data-dropdown]").removeAttribute("data-open");
     render();
+  });
+}
+
+function getValidTheme(theme) {
+  return Object.hasOwn(THEME_OPTIONS, theme) ? theme : "warm";
+}
+
+function syncThemeSelect() {
+  state.globalTheme = getValidTheme(state.globalTheme);
+  elements.themeLabel.textContent = THEME_OPTIONS[state.globalTheme].label;
+
+  elements.themeMenu.querySelectorAll("[data-theme]").forEach((item) => {
+    const isSelected = item.dataset.theme === state.globalTheme;
+    if (isSelected) {
+      item.setAttribute("aria-current", "true");
+    } else {
+      item.removeAttribute("aria-current");
+    }
   });
 }
 
 /* ── Session ──────────────────────────────────────────────────── */
 
 function applySession(session = {}) {
-  state.globalTheme = Object.hasOwn(THEME_OPTIONS, session.globalTheme)
-    ? session.globalTheme
-    : "warm";
+  state.globalTheme = getValidTheme(session.globalTheme);
   state.currentIndex = Number.isInteger(session.currentIndex)
     ? Math.max(0, session.currentIndex)
     : 0;
   state.markdown =
     typeof session.markdown === "string" ? session.markdown : sampleMarkdown;
   elements.markdownInput.value = state.markdown;
-  elements.themeLabel.textContent = THEME_OPTIONS[state.globalTheme].label;
+  syncThemeSelect();
 }
 
 function getDeckFilename(extension) {
@@ -231,7 +253,7 @@ async function renderMermaidDiagrams(container) {
       securityLevel: "strict",
       theme: "base",
       themeVariables: {
-        fontFamily: "Instrument Sans, sans-serif",
+        fontFamily: "Figtree, sans-serif",
         primaryColor: "#fffdf8",
         primaryTextColor: "#221f1a",
         primaryBorderColor: "#d7643b",
@@ -343,8 +365,8 @@ function restoreInitialSession() {
   );
 
   if (urlState.theme) {
-    state.globalTheme = urlState.theme;
-    elements.themeLabel.textContent = THEME_OPTIONS[state.globalTheme].label;
+    state.globalTheme = getValidTheme(urlState.theme);
+    syncThemeSelect();
   }
 
   if (Number.isInteger(urlState.slideIndex)) {
